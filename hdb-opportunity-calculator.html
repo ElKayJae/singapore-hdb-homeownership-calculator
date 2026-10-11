@@ -1114,11 +1114,17 @@
           const oaBalanceValue = calculatedValue(money(oaStats.endingBalance), "Estimated CPF OA balance", "Starting CPF OA after upfront use, plus estimated monthly contributions and interest, minus modeled mortgage payments", `starting OA ${money(number("startingOA"))}; CPF used ${money(oaStats.funding.oaUsed)}; monthly CPF ${money(monthlyOaContribution)}; yearly interest ${number("oaRate")}% ; months ${months}`);
           const oaInterestValue = calculatedValue(money(oaStats.interestEarned), "Estimated CPF interest", "Estimated interest on the modeled CPF OA balance using the selected yearly rate", `starting OA ${money(number("startingOA"))}; CPF used ${money(oaStats.funding.oaUsed)}; monthly CPF ${money(monthlyOaContribution)}; yearly rate ${number("oaRate")}% ; months ${months}`);
           const cpfInterestValue = calculatedValue(baseline ? "BTO reference" : signedMoney(oaInterestDifference), "CPF interest difference vs BTO", "This option estimated CPF interest minus BTO estimated CPF interest. A negative amount means this option earns less in the model; it is not money removed from CPF.", `option interest ${money(oaStats.interestEarned)}; BTO interest ${money(btoOaInterest)}`);
+          const firstCashDifference = monthlyCashDifference[0] ?? 0;
+          const lastCashDifference = monthlyCashDifference[monthlyCashDifference.length - 1] ?? 0;
+          const monthlyRate = investmentReturn / 100 / 12;
+          const describeMonthlyCashDifference = (difference) => Math.abs(difference) < .5
+            ? "about the same cash left after housing as BTO"
+            : `${money(Math.abs(difference))} ${difference > 0 ? "more" : "less"} cash left after housing than BTO`;
           const monthlyValue = calculatedValue(
             signedMoney(futureMonthlyCashDifference),
             "Value if monthly cash difference were invested",
-            "Compare the estimated cash left after housing for both options each month, then apply the selected example return to those monthly differences",
-            `Comparison period: ${years} years; example yearly return: ${investmentReturn}%; includes ${months} monthly comparisons.`
+            "Grow each month's difference in cash left after housing at the example yearly return until the end of the comparison period",
+            `Month 1: ${describeMonthlyCashDifference(firstCashDifference)}. Month ${months}: ${describeMonthlyCashDifference(lastCashDifference)}. Includes all ${months} monthly differences. Example yearly return: ${investmentReturn}% (about ${(monthlyRate * 100).toFixed(2)}% monthly); earlier amounts are invested for longer.`
           );
           return `<tr class="${index === 0 ? "baseline-row" : ""}">
             <td class="scenario-name">${label}</td>
