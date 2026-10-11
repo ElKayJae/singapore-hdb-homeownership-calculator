@@ -670,7 +670,7 @@
               <th scope="col">Estimated CPF OA balance <button class="info-trigger" type="button" aria-label="About estimated CPF OA balance" data-derivation="Estimated CPF OA balance\nStarting OA after upfront use, plus estimated monthly contributions and interest, minus modeled mortgage payments from OA above the amount kept aside. This is simplified and subject to CPF rules.">i</button></th>
               <th scope="col">Estimated CPF interest <button class="info-trigger" type="button" aria-label="About estimated CPF interest" data-derivation="Estimated CPF interest\nA monthly estimate using the selected CPF OA interest rate and modeled balance. Extra CPF interest is not included.">i</button></th>
               <th scope="col">CPF interest difference vs BTO <button class="info-trigger" type="button" aria-label="How to read the CPF interest difference" data-derivation="CPF interest difference vs BTO\nFormula: this option estimated CPF interest minus BTO estimated CPF interest.\nA negative amount means this option earns less than BTO; a positive amount means it earns more.\nThis is a difference in estimated interest, not cash removed from CPF.">i</button></th>
-              <th scope="col">Average monthly cash difference vs BTO <button class="info-trigger" type="button" aria-label="About average monthly cash difference versus BTO" data-derivation="Average monthly cash difference vs BTO\nShows the average monthly spendable cash left after housing for this option, compared with BTO. Positive means more cash left on average; negative means less. Monthly amounts can vary as CPF OA used for the loan changes.">i</button></th>
+              <th scope="col">Average monthly cash difference vs BTO <button class="info-trigger" type="button" aria-label="About average monthly cash difference versus BTO" data-derivation="Average monthly cash difference vs BTO\nFormula: add the monthly difference between this option's cash left after housing and BTO's cash left after housing, then divide by the number of months.\nCash left after housing = rent after set-aside − the mortgage amount paid in cash after CPF OA − BTO waiting housing cost (if any). Positive means more cash left on average; negative means less.">i</button></th>
               <th scope="col">Value if monthly cash difference were invested <button class="info-trigger" type="button" aria-label="About the value if monthly cash difference were invested" data-derivation="Value if monthly cash difference were invested\nEach month, the model compares cash left after housing for this option with BTO. It then applies the selected example equity return to each month's difference. If this option leaves more cash each month, a higher return increases its value; if it leaves less, the BTO advantage grows. CPF OA savings are tracked separately.">i</button></th>
             </tr>
           </thead>
@@ -1049,7 +1049,8 @@
           const futureMonthlyCashDifference = futureValueCashFlows(monthlyCashDifference, investmentReturn);
           const lowestMonthlyCashDifference = Math.min(...monthlyCashDifference);
           const highestMonthlyCashDifference = Math.max(...monthlyCashDifference);
-          const averageMonthlyCashDifference = monthlyCashDifference.reduce((total, difference) => total + difference, 0) / months;
+          const totalMonthlyCashDifference = monthlyCashDifference.reduce((total, difference) => total + difference, 0);
+          const averageMonthlyCashDifference = totalMonthlyCashDifference / months;
           const cashDifference = oaStats.funding.cashUsed - btoFunding.cashUsed;
           const oaDifference = oaStats.funding.oaUsed - btoFunding.oaUsed;
           const fundingGapDifference = oaStats.funding.shortfall - btoFunding.shortfall;
@@ -1089,8 +1090,8 @@
           const monthlyCashAverageValue = calculatedValue(
             baseline ? "BTO reference" : `${signedMoney(averageMonthlyCashDifference)}/month`,
             "Average monthly cash difference vs BTO",
-            "Average cash left after housing for this option minus the BTO average. Positive means more spendable cash on average; negative means less. CPF OA balance changes are separate.",
-            `Average: ${signedMoney(averageMonthlyCashDifference)}/month across ${months} months. Individual months ranged from ${signedMoney(lowestMonthlyCashDifference)} to ${signedMoney(highestMonthlyCashDifference)} because the amount paid from CPF OA changes as its balance changes.`
+            "Average monthly cash left after housing for this option minus BTO. The cash-paid mortgage part is the loan payment not covered by CPF OA above the amount kept aside. Positive means more spendable cash on average; negative means less.",
+            `Total of monthly differences: ${signedMoney(totalMonthlyCashDifference)}. Comparison months: ${months}. Calculation: ${signedMoney(totalMonthlyCashDifference)} ÷ ${months} = ${signedMoney(averageMonthlyCashDifference)}/month. Monthly differences ranged from ${signedMoney(lowestMonthlyCashDifference)} to ${signedMoney(highestMonthlyCashDifference)} as CPF OA coverage changed.`
           );
           return `<tr class="${index === 0 ? "baseline-row" : ""}">
             <td class="scenario-name">${label}</td>
