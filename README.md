@@ -5,6 +5,7 @@ A browser-based planning tool for comparing HDB purchase scenarios, monthly hous
 ## Files
 
 - `hdb-opportunity-calculator.html` — interactive calculator. Open it in a modern browser; no build step is required.
+- `index.html` — GitHub Pages entry point; redirects visitors to the calculator.
 - `singapore-hdb-options.md` — public-data sources, model assumptions, and guidance for interpreting the scenarios.
 
 ## Notes
