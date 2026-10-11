@@ -28,7 +28,7 @@ Source: [HDB resale flat prices dataset on data.gov.sg](https://data.gov.sg/data
 
 ## How the main outputs are modeled
 
-- **Loan and instalment:** the modeled loan is the lower of price times the selected LTV and the loan supported by the income-based monthly payment limit at the assessment rate. Monthly instalments use the standard amortization formula and the selected term and rate. HFE may assess a lower amount.
+- **Loan and instalment:** the model caps its monthly income-based instalment limit at 30% of gross monthly income, matching the HDB MSR ceiling; a user may choose a lower percentage for a more cautious budget. The MSR applies to the full instalment whether paid with CPF OA, cash, or both. The modeled loan is the lower of price times the selected LTV and the loan supported by that payment limit at the assessment rate. The assessment rate uses at least the higher of the selected actual rate and HDB's 3% floor. It sizes the estimated loan; the selected actual rate estimates the regular monthly payment. HFE may assess a lower amount.
 - **Upfront funds:** purchase price minus modeled loan and assumed grant, plus residential Buyer’s Stamp Duty. Legal fees, valuation shortfall/COV, renovation, furnishing, and moving costs are excluded.
 - **Funding sources:** use starting OA above the selected buffer first, then cash. Any remaining amount is shown as a funding gap. This is a simplified source order, not a CPF withdrawal approval or payment schedule.
 - **Rent:** tenant count times gross rent per room, reduced by the selected vacancy/upkeep reserve. Rent is not guaranteed and is not counted toward loan eligibility.

@@ -118,6 +118,12 @@
       font-size: 12px;
       font-weight: 600;
     }
+    .field-note {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
     .field input,
     .field select {
       display: block;
@@ -466,16 +472,19 @@
             <div class="input-unit"><input id="ltv" type="number" min="0" max="100" step="1" value="75"><span>%</span></div>
           </div>
           <div class="field">
-            <label for="incomeCap">Income-based payment cap</label>
-            <div class="input-unit"><input id="incomeCap" type="number" min="0" max="100" step="1" value="30"><span>%</span></div>
+            <label for="incomeCap">Monthly instalment cap (MSR) <button class="info-trigger" type="button" aria-label="About the monthly instalment cap" data-derivation="Mortgage Servicing Ratio (MSR)\nThe HDB loan instalment is capped at 30% of assessed monthly income.\nThe cap applies to the full instalment whether it is paid from CPF OA, cash, or both.\nThis model lets you choose a lower limit for a more cautious personal budget.">i</button></label>
+            <div class="input-unit"><input id="incomeCap" type="number" min="0" max="30" step="1" value="30"><span>%</span></div>
+            <p class="field-note">HDB's MSR limit is up to 30% of monthly income. Lower it to model a more cautious budget.</p>
           </div>
           <div class="field">
-            <label for="assessmentRate">Assessment rate</label>
-            <div class="input-unit"><input id="assessmentRate" type="number" min="0" max="20" step="0.1" value="3"><span>%</span></div>
+            <label for="assessmentRate">Loan assessment rate <button class="info-trigger" type="button" aria-label="About the loan assessment rate" data-derivation="Loan assessment rate\nUsed to convert the monthly MSR payment limit into an estimated maximum loan.\nHDB uses the higher of the prevailing HDB loan rate and its 3% interest-rate floor.\nThis is not the actual rate used to estimate the regular monthly payment.">i</button></label>
+            <div class="input-unit"><input id="assessmentRate" type="number" min="3" max="20" step="0.1" value="3"><span>%</span></div>
+            <p class="field-note">Used to size the loan, not to estimate its regular payment. Minimum: 3% or the selected actual rate, whichever is higher.</p>
           </div>
           <div class="field">
-            <label for="actualRate">Actual HDB loan rate</label>
+            <label for="actualRate">Actual HDB loan rate (payment estimate)</label>
             <div class="input-unit"><input id="actualRate" type="number" min="0" max="20" step="0.05" value="2.6"><span>%</span></div>
+            <p class="field-note">Used to estimate the monthly instalment for cash-flow and equity calculations.</p>
           </div>
           <div class="field">
             <label for="term">Loan term</label>
@@ -884,12 +893,17 @@
         const btoHoldingYears = Math.max(0, years - btoWaitYears);
         const btoHoldingMonths = btoHoldingYears * 12;
         const termMonths = number("term") * 12;
-        const assessmentRate = number("assessmentRate");
+        const incomeCapInput = document.getElementById("incomeCap");
+        const incomeCap = Math.min(30, Math.max(0, number("incomeCap")));
+        incomeCapInput.value = String(incomeCap);
+        const assessmentInput = document.getElementById("assessmentRate");
+        const assessmentRate = Math.min(20, Math.max(3, number("actualRate"), number("assessmentRate")));
+        assessmentInput.value = String(assessmentRate);
         const monthlyOaContribution = cpfOaContribution(number("income"), document.getElementById("cpfAgeBand").value);
         document.getElementById("monthlyOAOutput").textContent = currency.format(monthlyOaContribution);
         const cpfAgeBand = document.getElementById("cpfAgeBand");
         document.getElementById("cpfOaInfo").dataset.derivation = `Estimated monthly CPF OA contribution\nFormula: rounded total CPF contribution × age-based OA allocation ratio\nInputs: Ordinary Wages ${money(number("income"))} (capped at S$8,000); age band ${cpfAgeBand.options[cpfAgeBand.selectedIndex].text}; 2026 full rates for citizens and third-year-or-later PRs\nResult: ${money(monthlyOaContribution)} per month`;
-        const incomePaymentLimit = number("income") * number("incomeCap") / 100;
+        const incomePaymentLimit = number("income") * incomeCap / 100;
         const incomeLoanCap = assessmentRate === 0
           ? incomePaymentLimit * termMonths
           : incomePaymentLimit * (1 - Math.pow(1 + assessmentRate / 100 / 12, -termMonths)) / (assessmentRate / 100 / 12);
