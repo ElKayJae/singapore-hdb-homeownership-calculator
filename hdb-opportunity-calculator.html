@@ -37,7 +37,7 @@
       line-height: 1.5;
     }
     .page {
-      width: min(1680px, calc(100% - 40px));
+      width: min(2200px, calc(100% - 32px));
       margin: 0 auto;
       padding: 30px 0 56px;
     }
@@ -130,6 +130,28 @@
     }
     .status-value { display: block; margin-top: 2px; font-size: 16px; font-weight: 700; }
     .status-value.warn { color: var(--coral); }
+    .upfront-chart {
+      margin: 0 0 20px;
+      padding: 15px 17px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .upfront-chart h2 { margin: 0 0 4px; font-size: 16px; }
+    .upfront-chart-note { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 12px; color: var(--muted); font-size: 11px; }
+    .chart-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .chart-legend-bar { width: 18px; height: 8px; border-radius: 4px; background: var(--teal); }
+    .chart-legend-marker { width: 2px; height: 14px; background: var(--ink); }
+    .upfront-chart-row + .upfront-chart-row { margin-top: 12px; }
+    .chart-row-heading { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; font-size: 12px; }
+    .chart-row-heading strong { font-variant-numeric: tabular-nums; }
+    .chart-track { position: relative; height: 13px; border-radius: 4px; background: #edf1ee; }
+    .chart-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 4px; background: var(--teal); }
+    .chart-fill.is-short { background: var(--coral); }
+    .chart-available-marker { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
+    .chart-result { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
 
     form { margin: 0; }
     .assumption-band {
@@ -256,7 +278,12 @@
     .scenario-table {
       border-collapse: separate;
       border-spacing: 0;
+      white-space: normal;
     }
+    .scenario-table th,
+    .scenario-table td { padding: 8px 6px; white-space: normal; }
+    .scenario-table .cell-result { white-space: normal; }
+    .scenario-table .cell-result > span:first-child { white-space: normal; }
     .scenario-table th:first-child,
     .scenario-table td:first-child {
       position: sticky;
@@ -486,6 +513,16 @@
         <span class="status-label">Earliest modeled sale <button class="info-trigger" type="button" aria-label="How the sale timing estimate works" data-derivation="Earliest modeled sale\nThe resale estimate starts from purchase. The BTO estimate adds the wait for keys to the selected minimum occupation period. HDB rules and the flat's classification determine actual sale eligibility.">i</button></span>
         <output class="status-value" id="saleEligibilityOutput">-</output>
       </div>
+    </section>
+
+    <section class="upfront-chart" aria-labelledby="upfrontChartTitle">
+      <h2 id="upfrontChartTitle">Quick view: money needed at purchase</h2>
+      <p class="upfront-chart-note">The bar shows the estimated purchase money needed. The dark marker shows the cash and CPF OA entered above, after the amount you chose to keep in OA. A bar past the marker means the model shows a shortfall. Other costs are not included.</p>
+      <div class="chart-legend" aria-label="Chart legend">
+        <span class="chart-legend-item"><span class="chart-legend-bar" aria-hidden="true"></span>Estimated purchase money</span>
+        <span class="chart-legend-item"><span class="chart-legend-marker" aria-hidden="true"></span>Money available</span>
+      </div>
+      <div id="upfrontChartRows"></div>
     </section>
 
     <form id="assumptions" autocomplete="off">
@@ -965,6 +1002,23 @@
         const fourOutput = document.getElementById("fourFundingOutput");
         const saleEligibilityOutput = document.getElementById("saleEligibilityOutput");
         const availableAfterBuffer = number("startingCash") + Math.max(0, number("startingOA") - number("oaBuffer"));
+        const upfrontScenarios = scenarios.filter((scenario) => scenario.type === "BTO" || scenario.tenants === 0);
+        const chartMaximum = Math.max(1, availableAfterBuffer, ...upfrontScenarios.map((scenario) => scenario.upfront)) * 1.06;
+        document.getElementById("upfrontChartRows").innerHTML = upfrontScenarios.map((scenario) => {
+          const remaining = availableAfterBuffer - scenario.upfront;
+          const amountNeededWidth = Math.min(100, scenario.upfront / chartMaximum * 100);
+          const availableWidth = Math.min(100, availableAfterBuffer / chartMaximum * 100);
+          const status = remaining >= 0 ? `${money(remaining)} left after this estimate` : `${money(-remaining)} more needed`;
+          const accessibleSummary = `${scenario.name}: ${money(scenario.upfront)} estimated purchase money; ${money(availableAfterBuffer)} available; ${status}.`;
+          return `<div class="upfront-chart-row">
+            <div class="chart-row-heading"><span>${scenario.name}</span><strong>${money(scenario.upfront)} needed</strong></div>
+            <div class="chart-track" role="img" aria-label="${escapeAttribute(accessibleSummary)}">
+              <span class="chart-fill ${remaining < 0 ? "is-short" : ""}" style="width:${amountNeededWidth.toFixed(1)}%"></span>
+              <span class="chart-available-marker" style="left:${availableWidth.toFixed(1)}%"></span>
+            </div>
+            <p class="chart-result">${status}; ${money(availableAfterBuffer)} available in cash and CPF OA above the amount kept aside.</p>
+          </div>`;
+        }).join("");
         incomeOutput.innerHTML = calculatedValue(money(incomeLoanCap), "Estimated maximum loan", "Converts the monthly payment limit into an estimated loan using the selected interest rate and repayment period", `${money(number("income"))} monthly pay; payment limit ${incomeCap}% = ${money(incomePaymentLimit)} per month; rate ${assessmentRate}%; term ${number("term")} years`);
         const btoSaleYear = btoWaitYears + btoMopYears;
         saleEligibilityOutput.innerHTML = calculatedValue(`Resale: year 5 · New flat: year ${btoSaleYear}`, "Earliest modeled sale", "Resale minimum stay; new-flat wait for keys + minimum stay", `Resale: 5 years; new flat: ${btoWaitYears} years to keys + ${btoMopYears} years minimum stay = ${btoSaleYear} years from today`);
@@ -1002,7 +1056,7 @@
           const cashUsedValue = calculatedValue(money(funding.cashUsed), "Cash used", "Use cash for the purchase amount left after CPF OA", `purchase amount left after CPF ${money(Math.max(0, scenario.upfront - funding.oaUsed))}; available cash ${money(number("startingCash"))}`);
           const fundingGapValue = calculatedValue(funding.shortfall > 0 ? money(funding.shortfall) : "S$0", "Extra money needed", "Purchase amount left after the model uses CPF OA and cash", `purchase amount ${money(scenario.upfront)}; CPF used ${money(funding.oaUsed)}; cash used ${money(funding.cashUsed)}`);
           const oaFlowValue = calculatedValue(
-            mortgageActiveNow ? `${signedMoney(oaFlow)} ${oaFlow >= 0 ? "left in CPF OA" : "short after CPF"}` : `${money(monthlyOaContribution)} added to CPF OA before keys`,
+            mortgageActiveNow ? `${signedMoney(oaFlow)} ${oaFlow >= 0 ? "left in CPF OA" : "short after CPF"}` : `${money(monthlyOaContribution)} before keys`,
             "CPF left after payment",
             mortgageActiveNow ? "estimated CPF added to OA minus loan payment" : "CPF is added to OA before BTO loan payments start",
             `OA contribution ${money(monthlyOaContribution)}; mortgage ${mortgageActiveNow ? money(scenario.monthlyPayment) : "not started"}`
@@ -1051,10 +1105,10 @@
           const oaDiffValue = calculatedValue(baseline ? "BTO reference" : signedMoney(oaDifference), "Extra CPF used vs BTO", "CPF OA used upfront for this option minus CPF OA used for BTO", `option CPF ${money(oaStats.funding.oaUsed)}; BTO CPF ${money(btoFunding.oaUsed)}`);
           const gapDiffValue = calculatedValue(baseline ? "BTO reference" : signedMoney(fundingGapDifference), "Extra money needed vs BTO", "Compare purchase money not covered by cash and CPF for each option", `option shortfall ${money(oaStats.funding.shortfall)}; BTO shortfall ${money(btoFunding.shortfall)}`);
           const btoCashValue = calculatedValue(baseline ? "BTO reference" : money(futureBtoCashValue), "What spare cash could grow to", "An example of how extra cash used for resale could grow if invested for the selected period. Returns are not guaranteed.", `extra cash ${signedMoney(cashDifference)}; example return ${investmentReturn}%; years ${years}`);
-          const priceChangeValue = calculatedValue(isBtoPreKeys ? "Before keys" : signedMoney(projectedValue - scenario.price), "Estimated flat value change", "Difference between the starting price and the estimated flat value under this yearly price scenario", `starting price ${money(scenario.price)}; yearly change ${propertyGrowth}%; years ${heldYears}`);
-          const homeValueValue = calculatedValue(isBtoPreKeys ? "Before keys" : money(projectedValue), "Estimated flat value", "Starting flat price changed by the selected yearly amount over the modeled years. This is a what-if, not a prediction.", `starting price ${money(scenario.price)}; yearly change ${propertyGrowth}%; years ${heldYears}`);
-          const loanBalanceValue = calculatedValue(isBtoPreKeys ? "Loan not started" : money(balance), "Loan still owed", "Estimated loan left after the modeled monthly payments", `starting loan ${money(scenario.loan)}; interest rate ${number("actualRate")}% ; months paid ${heldMonths}; years to repay ${number("term")}`);
-          const equityValue = calculatedValue(isBtoPreKeys ? "Not estimated yet" : money(equity), "Estimated flat value after loan", "Estimated flat value minus the estimated loan still owed. Selling costs and other savings are not included.", `estimated flat value ${money(projectedValue ?? 0)}; loan still owed ${money(balance ?? 0)}`);
+          const priceChangeValue = calculatedValue(isBtoPreKeys ? "After keys" : signedMoney(projectedValue - scenario.price), "Estimated flat value change", "Difference between the starting price and the estimated flat value under this yearly price scenario", `starting price ${money(scenario.price)}; yearly change ${propertyGrowth}%; years ${heldYears}`);
+          const homeValueValue = calculatedValue(isBtoPreKeys ? "After keys" : money(projectedValue), "Estimated flat value", "Starting flat price changed by the selected yearly amount over the modeled years. This is a what-if, not a prediction.", `starting price ${money(scenario.price)}; yearly change ${propertyGrowth}%; years ${heldYears}`);
+          const loanBalanceValue = calculatedValue(isBtoPreKeys ? "After keys" : money(balance), "Loan still owed", "Estimated loan left after the modeled monthly payments", `starting loan ${money(scenario.loan)}; interest rate ${number("actualRate")}% ; months paid ${heldMonths}; years to repay ${number("term")}`);
+          const equityValue = calculatedValue(isBtoPreKeys ? "After keys" : money(equity), "Estimated flat value after loan", "Estimated flat value minus the estimated loan still owed. Selling costs and other savings are not included.", `estimated flat value ${money(projectedValue ?? 0)}; loan still owed ${money(balance ?? 0)}`);
           const oaBalanceValue = calculatedValue(money(oaStats.endingBalance), "Estimated CPF OA balance", "Starting CPF OA after upfront use, plus estimated monthly contributions and interest, minus modeled mortgage payments", `starting OA ${money(number("startingOA"))}; CPF used ${money(oaStats.funding.oaUsed)}; monthly CPF ${money(monthlyOaContribution)}; yearly interest ${number("oaRate")}% ; months ${months}`);
           const oaInterestValue = calculatedValue(money(oaStats.interestEarned), "Estimated CPF interest", "Estimated interest on the modeled CPF OA balance using the selected yearly rate", `starting OA ${money(number("startingOA"))}; CPF used ${money(oaStats.funding.oaUsed)}; monthly CPF ${money(monthlyOaContribution)}; yearly rate ${number("oaRate")}% ; months ${months}`);
           const oaLostValue = calculatedValue(baseline ? "BTO reference" : signedMoney(oaInterestLost), "CPF interest difference vs BTO", "BTO estimated CPF interest minus this option estimate. A positive amount means the option earns less in this model.", `BTO estimate ${money(btoOaInterest)}; option estimate ${money(oaStats.interestEarned)}`);
