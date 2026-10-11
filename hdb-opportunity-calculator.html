@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="en-SG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>HDB Opportunity Cost Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f6f2;
+      --surface: #ffffff;
+      --ink: #1d302b;
+      --muted: #586761;
+      --line: #d6dfda;
+      --teal: #087768;
+      --teal-soft: #e3f2ed;
+      --coral: #b94f37;
+      --coral-soft: #f8e9e3;
+      --gold: #9a6a19;
+      --gold-soft: #f6efd9;
+      --shadow: 0 10px 26px rgba(29, 48, 43, .055);
+      font-family: "DM Sans", "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .page {
+      width: min(1680px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 30px 0 56px;
+    }
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .masthead .stamp { color: var(--teal); }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin: 20px 0 7px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 38px;
+      font-weight: 500;
+      line-height: 1.08;
+    }
+    .intro {
+      max-width: 850px;
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+    .status-item { padding: 13px 16px; }
+    .status-item + .status-item { border-left: 1px solid var(--line); }
+    .status-label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-value { display: block; margin-top: 2px; font-size: 16px; font-weight: 700; }
+    .status-value.warn { color: var(--coral); }
+
+    form { margin: 0; }
+    .assumption-band {
+      margin: 0 0 18px;
+      padding: 17px 18px 19px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .assumption-band legend {
+      padding: 0 8px;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .fields {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
+      gap: 13px 16px;
+    }
+    .field label {
+      display: block;
+      min-height: 34px;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .field input,
+    .field select {
+      display: block;
+      width: 100%;
+      height: 40px;
+      padding: 8px 10px;
+      border: 1px solid #aebbb4;
+      border-radius: 4px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+    .field output.input-display {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 40px;
+      padding: 8px 38px 8px 10px;
+      border: 1px solid #aebbb4;
+      border-radius: 4px;
+      background: #f6f8f6;
+      color: var(--ink);
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+    .field input:focus-visible,
+    .field select:focus-visible,
+    button:focus-visible {
+      outline: 3px solid rgba(8, 119, 104, .24);
+      outline-offset: 1px;
+      border-color: var(--teal);
+    }
+    .input-unit { position: relative; }
+    .input-unit input { padding-right: 38px; }
+    .input-unit span {
+      position: absolute;
+      top: 9px;
+      right: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      pointer-events: none;
+    }
+    .form-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .hint { margin: 0; color: var(--muted); font-size: 12px; }
+    button {
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--teal); color: var(--teal); }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 28px 0 9px;
+    }
+    h2 { margin-bottom: 0; font-size: 19px; line-height: 1.25; }
+    .section-kicker { color: var(--muted); font-size: 12px; }
+    .section-note { margin: 7px 0 12px; color: var(--muted); font-size: 13px; }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .scenario-table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .scenario-table th:first-child,
+    .scenario-table td:first-child {
+      position: sticky;
+      left: 0;
+      min-width: 178px;
+      text-align: left;
+      box-shadow: 1px 0 0 var(--line);
+    }
+    .scenario-table-wrap.is-scrolled .scenario-table th:first-child,
+    .scenario-table-wrap.is-scrolled .scenario-table td:first-child {
+      box-shadow: 1px 0 0 var(--line), 8px 0 10px -10px rgba(29, 48, 43, .5);
+    }
+    .scenario-table thead th:first-child {
+      z-index: 3;
+      background: #eaf0ec;
+    }
+    .scenario-table tbody td:first-child {
+      z-index: 2;
+      background: var(--surface);
+    }
+    .scenario-table tbody tr:hover td:first-child { background: #f8fbf9; }
+    .scenario-table tbody tr.baseline-row td:first-child { background: #f2f8f5; }
+    th, td {
+      padding: 10px 11px;
+      border-bottom: 1px solid #e6ece8;
+      text-align: right;
+      vertical-align: middle;
+    }
+    th {
+      background: #eaf0ec;
+      color: #43524c;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.35;
+      text-transform: uppercase;
+      white-space: normal;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #f8fbf9; }
+    .baseline-row { background: #f2f8f5; }
+    .scenario-name { font-weight: 700; }
+    .calculation-table { white-space: normal; }
+    .calculation-table th,
+    .calculation-table td { min-width: 180px; text-align: left; }
+    .calculation-table td:nth-child(2) { min-width: 360px; }
+    .calculation-table td:nth-child(3) { min-width: 280px; }
+    .info-trigger {
+      display: inline-grid;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      max-width: 18px;
+      max-height: 18px;
+      aspect-ratio: 1;
+      flex: 0 0 18px;
+      place-items: center;
+      margin-left: 4px;
+      padding: 0;
+      border: 1px solid #93a69d;
+      border-radius: 50%;
+      background: #fff;
+      color: var(--teal);
+      font: 700 11px/1 "DM Sans", sans-serif;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+    .info-trigger:hover { border-color: var(--teal); background: var(--teal-soft); }
+    .cell-result { display: inline-flex; align-items: center; justify-content: flex-end; gap: 3px; white-space: nowrap; }
+    #derivationPopover {
+      width: min(480px, calc(100vw - 28px));
+      max-width: min(480px, calc(100vw - 28px));
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 12px 34px rgba(29, 48, 43, .2);
+      font: 13px/1.5 "DM Sans", sans-serif;
+      white-space: normal;
+    }
+    .derivation-title {
+      margin: 0 0 10px;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .derivation-row {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 8px;
+      padding: 7px 0;
+      border-top: 1px solid #e6ece8;
+    }
+    .derivation-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .derivation-value { overflow-wrap: anywhere; }
+    .derivation-row.is-formula .derivation-value {
+      color: #075f53;
+      font-weight: 600;
+    }
+    .derivation-row.is-result .derivation-value {
+      color: var(--ink);
+      font-weight: 700;
+    }
+    .derivation-copy { margin: 0; }
+    @media (max-width: 420px) {
+      .derivation-row { grid-template-columns: 1fr; gap: 2px; }
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: var(--teal-soft);
+      color: #075f53;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .higher { color: var(--coral); font-weight: 700; }
+    .lower { color: var(--teal); font-weight: 700; }
+    .warning-line {
+      margin: 13px 0 0;
+      padding: 10px 12px;
+      border-left: 3px solid var(--coral);
+      background: var(--coral-soft);
+      color: #623226;
+      font-size: 13px;
+    }
+    .accounting-note {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 20px;
+      padding: 17px 18px;
+      border-top: 2px solid var(--teal);
+      background: #eaf2ee;
+    }
+    .accounting-note h2 { margin-bottom: 6px; font-size: 15px; }
+    .accounting-note p { margin: 0; color: #465750; font-size: 12px; }
+    .footnote { margin: 13px 0 0; color: var(--muted); font-size: 11px; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    @media (max-width: 800px) {
+      .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .status-strip { grid-template-columns: 1fr; }
+      .status-item + .status-item { border-top: 1px solid var(--line); border-left: 0; }
+      .accounting-note { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .page { width: min(100% - 24px, 1240px); padding-top: 18px; }
+      h1 { font-size: 31px; }
+      .fields { grid-template-columns: 1fr 1fr; gap: 11px 10px; }
+      .field label { min-height: 42px; font-size: 11px; }
+      .field input, .field select { height: 38px; padding-left: 8px; font-size: 13px; }
+      .assumption-band { padding: 14px 12px; }
+      .section-heading { display: block; }
+      .section-kicker { display: block; margin-top: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="masthead">
+      <span>Singapore housing model</span>
+      <span class="stamp">Editable planning tool</span>
+    </div>
+
+    <h1>Capital, rent &amp; home equity</h1>
+    <p class="intro">Compare an illustrative 2-room BTO baseline with P75 resale prices. Change the sample assumptions below; both tables recalculate immediately. Cash flow, opportunity cost, and home equity are shown as separate components.</p>
+
+    <section class="status-strip" aria-label="Current model summary">
+      <div class="status-item">
+        <span class="status-label">Income-capped loan <button class="info-trigger" type="button" aria-label="Derivation for income-capped loan" data-derivation="The income-based monthly payment cap is gross income times the selected cap percentage. The supported loan is the present value of those monthly payments at the assessment rate and selected loan term.">i</button></span>
+        <output class="status-value" id="incomeLoanOutput">-</output>
+      </div>
+      <div class="status-item">
+        <span class="status-label">3-room gap after OA buffer <button class="info-trigger" type="button" aria-label="Derivation for 3-room funding status" data-derivation="Upfront funds minus starting cash and starting OA above the selected buffer. A positive result is the amount still unfunded.">i</button></span>
+        <output class="status-value" id="threeUpfrontOutput">-</output>
+      </div>
+      <div class="status-item">
+        <span class="status-label">4-room gap after OA buffer <button class="info-trigger" type="button" aria-label="Derivation for 4-room funding status" data-derivation="Upfront funds minus starting cash and starting OA above the selected buffer. A positive result is the amount still unfunded.">i</button></span>
+        <output class="status-value warn" id="fourFundingOutput">-</output>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Earliest sale eligibility <button class="info-trigger" type="button" aria-label="Derivation for sale eligibility dates" data-derivation="Standard resale is modeled as sale-eligible after a 5-year MOP. BTO is modeled as key wait plus the selected 5-year Standard or 10-year Plus/Prime MOP.">i</button></span>
+        <output class="status-value" id="saleEligibilityOutput">-</output>
+      </div>
+    </section>
+
+    <form id="assumptions" autocomplete="off">
+      <fieldset class="assumption-band">
+        <legend>Purchase assumptions</legend>
+        <div class="fields">
+          <div class="field">
+            <label for="btoPrice">2-room BTO price, no resale</label>
+            <div class="input-unit"><input id="btoPrice" type="number" min="100000" max="1500000" step="1000" value="300000"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="price3">3-room resale P75 price</label>
+            <div class="input-unit"><input id="price3" type="number" min="100000" max="2000000" step="1000" value="695000"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="price4">4-room resale P75 price</label>
+            <div class="input-unit"><input id="price4" type="number" min="100000" max="3000000" step="1000" value="860000"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="grant3">3-room Singles Grant</label>
+            <div class="input-unit"><input id="grant3" type="number" min="0" max="100000" step="1000" value="40000"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="grant4">4-room Singles Grant</label>
+            <div class="input-unit"><input id="grant4" type="number" min="0" max="100000" step="1000" value="40000"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="startingCash">Starting cash</label>
+            <div class="input-unit"><input id="startingCash" type="number" min="0" max="5000000" step="1000" value="100000"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="startingOA">Starting CPF OA</label>
+            <div class="input-unit"><input id="startingOA" type="number" min="0" max="5000000" step="1000" value="100000"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="oaBuffer">OA amount to preserve</label>
+            <div class="input-unit"><input id="oaBuffer" type="number" min="0" max="500000" step="1000" value="20000"><span>S$</span></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="assumption-band">
+        <legend>Income and financing</legend>
+        <div class="fields">
+          <div class="field">
+            <label for="income">Gross monthly Ordinary Wages</label>
+            <div class="input-unit"><input id="income" type="number" min="0" max="100000" step="1" value="7999"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="ltv">Maximum loan-to-value</label>
+            <div class="input-unit"><input id="ltv" type="number" min="0" max="100" step="1" value="75"><span>%</span></div>
+          </div>
+          <div class="field">
+            <label for="incomeCap">Income-based payment cap</label>
+            <div class="input-unit"><input id="incomeCap" type="number" min="0" max="100" step="1" value="30"><span>%</span></div>
+          </div>
+          <div class="field">
+            <label for="assessmentRate">Assessment rate</label>
+            <div class="input-unit"><input id="assessmentRate" type="number" min="0" max="20" step="0.1" value="3"><span>%</span></div>
+          </div>
+          <div class="field">
+            <label for="actualRate">Actual HDB loan rate</label>
+            <div class="input-unit"><input id="actualRate" type="number" min="0" max="20" step="0.05" value="2.6"><span>%</span></div>
+          </div>
+          <div class="field">
+            <label for="term">Loan term</label>
+            <div class="input-unit"><input id="term" type="number" min="5" max="30" step="1" value="25"><span>years</span></div>
+          </div>
+          <div class="field">
+            <label for="cpfAgeBand">CPF allocation age band</label>
+            <select id="cpfAgeBand">
+              <option value="35">35 and below</option>
+              <option value="36-45" selected>Above 35 to 45</option>
+              <option value="46-50">Above 45 to 50</option>
+              <option value="51-55">Above 50 to 55</option>
+              <option value="56-60">Above 55 to 60</option>
+              <option value="61-65">Above 60 to 65</option>
+              <option value="66-70">Above 65 to 70</option>
+              <option value="70+">Above 70</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="monthlyOAOutput">Estimated monthly CPF OA contribution <button id="cpfOaInfo" class="info-trigger" type="button" aria-label="Derivation for estimated CPF OA contribution" data-derivation="Estimated monthly CPF OA contribution\nFormula: total CPF contribution × OA allocation ratio\nInputs: monthly Ordinary Wages, age band, and 2026 full contribution rates\nResult: updated from the assumptions below">i</button></label>
+            <div class="input-unit"><output id="monthlyOAOutput" class="input-display">-</output><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="oaRate">CPF OA base interest</label>
+            <div class="input-unit"><input id="oaRate" type="number" min="0" max="10" step="0.1" value="2.5"><span>% p.a.</span></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="assumption-band">
+        <legend>Rent, investment and horizon</legend>
+        <div class="fields">
+          <div class="field">
+            <label for="roomRent">Gross rent per room / month</label>
+            <div class="input-unit"><input id="roomRent" type="number" min="0" max="20000" step="50" value="1000"><span>S$</span></div>
+          </div>
+          <div class="field">
+            <label for="reserve">Vacancy and upkeep reserve</label>
+            <div class="input-unit"><input id="reserve" type="number" min="0" max="90" step="1" value="15"><span>%</span></div>
+          </div>
+          <div class="field">
+            <label for="investmentReturn">Investment return</label>
+            <div class="input-unit"><input id="investmentReturn" type="number" min="-50" max="50" step="0.5" value="4"><span>% p.a.</span></div>
+          </div>
+          <div class="field">
+            <label for="propertyGrowth">Property price change</label>
+            <div class="input-unit"><input id="propertyGrowth" type="number" min="-50" max="50" step="0.5" value="0"><span>% p.a.</span></div>
+          </div>
+          <div class="field">
+            <label for="horizon">Calendar comparison horizon from today</label>
+            <div class="input-unit"><input id="horizon" type="number" min="1" max="30" step="1" value="5"><span>years</span></div>
+          </div>
+          <div class="field">
+            <label for="btoWait">Estimated BTO wait to keys</label>
+            <div class="input-unit"><input id="btoWait" type="number" min="0" max="15" step="0.5" value="5"><span>years</span></div>
+          </div>
+          <div class="field">
+            <label for="btoMop">BTO classification and MOP</label>
+            <select id="btoMop">
+              <option value="5" selected>Standard · 5 years</option>
+              <option value="10">Plus / Prime · 10 years</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="btoWaitHousingCost">Monthly housing cost during BTO wait</label>
+            <div class="input-unit"><input id="btoWaitHousingCost" type="number" min="0" max="50000" step="50" value="0"><span>S$</span></div>
+          </div>
+        </div>
+        <div class="form-footer">
+          <p class="hint">CPF OA is estimated from monthly wages and age band using 2026 full rates for citizens and third-year-or-later PRs. Wages are treated as Ordinary Wages, capped at S$8,000; Additional Wages and graduated PR rates are excluded.</p>
+          <button id="resetButton" type="button">Reset assumptions</button>
+        </div>
+      </fieldset>
+    </form>
+
+    <section aria-labelledby="cashflowTitle">
+      <div class="section-heading">
+        <h2 id="cashflowTitle">Affordability &amp; monthly cash flow</h2>
+        <span class="section-kicker">Positive cost difference = resale costs more than BTO</span>
+      </div>
+      <p class="section-note">Net housing cost compares mortgage less reserve-adjusted rent in mortgage-active months. Monthly cash available uses OA withdrawals above the buffer, rent, cash top-ups and the BTO-wait housing-cost input.</p>
+      <div class="table-wrap scenario-table-wrap">
+        <table class="scenario-table">
+          <caption class="sr-only">Affordability and monthly cash-flow outcomes for BTO and resale tenant scenarios</caption>
+          <thead>
+            <tr>
+              <th scope="col">Path</th>
+              <th scope="col">Tenants</th>
+              <th scope="col">Price</th>
+              <th scope="col">Loan <button class="info-trigger" type="button" aria-label="Derivation for loan amount" data-derivation="Loan amount is the lower of price times LTV and the loan supported by the income-based payment cap at the assessment rate.">i</button></th>
+              <th scope="col">Payment at actual rate <button class="info-trigger" type="button" aria-label="Derivation for actual mortgage payment" data-derivation="Monthly payment = loan times monthly interest rate divided by one minus (1 plus monthly interest rate) to the negative term in months. Uses the selected actual rate and loan term.">i</button></th>
+              <th scope="col">Payment at assessment rate <button class="info-trigger" type="button" aria-label="Derivation for assessment payment" data-derivation="The same amortization formula as the actual payment, using the assessment rate. This payment sets the modeled income-based loan cap.">i</button></th>
+              <th scope="col">Upfront funds <button class="info-trigger" type="button" aria-label="Derivation for upfront funds" data-derivation="Purchase price minus modeled loan minus grant plus residential Buyer’s Stamp Duty. Excludes legal fees, COV, renovation and moving costs.">i</button></th>
+              <th scope="col">OA used upfront <button class="info-trigger" type="button" aria-label="Derivation for OA used upfront" data-derivation="The calculator uses starting OA above the selected buffer first, up to the upfront funding requirement.">i</button></th>
+              <th scope="col">Cash used upfront <button class="info-trigger" type="button" aria-label="Derivation for cash used upfront" data-derivation="Cash funds the upfront requirement remaining after the modeled OA use, limited by starting cash.">i</button></th>
+              <th scope="col">Funding gap <button class="info-trigger" type="button" aria-label="Derivation for funding gap" data-derivation="Any upfront requirement remaining after the modeled OA and cash sources are used.">i</button></th>
+              <th scope="col">OA flow after mortgage <button class="info-trigger" type="button" aria-label="Derivation for OA flow after mortgage" data-derivation="After keys, monthly CPF OA contribution minus actual monthly mortgage. Before BTO keys, the mortgage has not started; the row shows the OA contribution only.">i</button></th>
+              <th scope="col">Net rent / month <button class="info-trigger" type="button" aria-label="Derivation for net rent" data-derivation="Tenant count times gross rent per room times one minus the vacancy and upkeep reserve percentage.">i</button></th>
+              <th scope="col">Monthly cash after housing <button class="info-trigger" type="button" aria-label="Derivation for monthly cash after housing" data-derivation="Reserve-adjusted rent minus cash mortgage top-up after OA withdrawals; during the BTO wait, subtract the entered current housing cost. This is the first-month value; the wealth table compounds the full monthly stream.">i</button></th>
+              <th scope="col">Net housing cost <button class="info-trigger" type="button" aria-label="Derivation for net housing cost" data-derivation="Actual monthly mortgage payment minus reserve-adjusted room rent. Before tax, utilities and other costs.">i</button></th>
+              <th scope="col">Resale minus BTO monthly cost <button class="info-trigger" type="button" aria-label="Derivation for monthly cost difference" data-derivation="Resale net housing cost minus BTO net housing cost. Positive means resale costs more; negative means resale costs less. Comparison is for months when both mortgages are active.">i</button></th>
+            </tr>
+          </thead>
+          <tbody id="cashflowRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="wealthTitle">
+      <div class="section-heading">
+        <h2 id="wealthTitle">Opportunity cost &amp; home equity</h2>
+        <span class="section-kicker">Separate components, not a total-net-worth score</span>
+      </div>
+      <p class="section-note">Three separate measures: the BTO's preserved upfront funds are assumed invested at the start; the monthly cash advantage is invested or funded at each month-end; home equity is property value less loan. Do not add either investment alternative to equity as another loss.</p>
+      <div class="table-wrap scenario-table-wrap">
+        <table class="scenario-table">
+          <caption class="sr-only">Opportunity cost and home-equity components by tenant scenario</caption>
+          <thead>
+            <tr>
+              <th scope="col">Path</th>
+              <th scope="col">Tenants</th>
+              <th scope="col">Extra cash used vs BTO <button class="info-trigger" type="button" aria-label="Derivation for extra cash used" data-derivation="Scenario cash used upfront minus BTO cash used upfront. Positive means BTO preserves that cash for investment.">i</button></th>
+              <th scope="col">Extra OA used vs BTO <button class="info-trigger" type="button" aria-label="Derivation for extra OA used" data-derivation="Scenario OA used upfront minus BTO OA used upfront. CPF interest effects are modeled separately in the OA-interest columns.">i</button></th>
+              <th scope="col">Extra funding gap vs BTO <button class="info-trigger" type="button" aria-label="Derivation for extra funding gap" data-derivation="Scenario upfront funding shortfall minus the BTO shortfall. A positive amount means that scenario cannot be fully funded from the modeled starting cash and OA.">i</button></th>
+              <th scope="col">BTO cash investment value <button class="info-trigger" type="button" aria-label="Derivation for BTO cash investment value" data-derivation="Extra cash used by resale times one plus the selected investment return raised to the selected period. OA is excluded; its return is measured separately.">i</button></th>
+              <th scope="col">Price change at selected rate <button class="info-trigger" type="button" aria-label="Derivation for property price change" data-derivation="Projected property value at the selected annual price change minus the starting price, over ownership years.">i</button></th>
+              <th scope="col">Projected home value <button class="info-trigger" type="button" aria-label="Derivation for projected home value" data-derivation="Starting property price times one plus the selected annual price change raised to ownership years. BTO ownership starts after the key wait.">i</button></th>
+              <th scope="col">Loan balance <button class="info-trigger" type="button" aria-label="Derivation for loan balance" data-derivation="Remaining principal after the selected number of mortgage payments at the actual loan rate. BTO payments start after keys; resale payments start immediately.">i</button></th>
+              <th scope="col">Gross home equity <button class="info-trigger" type="button" aria-label="Derivation for gross home equity" data-derivation="Projected home value minus remaining mortgage. Excludes selling costs and does not include CPF or investment balances.">i</button></th>
+              <th scope="col">Ending OA balance <button class="info-trigger" type="button" aria-label="Derivation for ending OA balance" data-derivation="Starting OA after upfront use, plus monthly contributions and base interest, less mortgage withdrawals above the preserved buffer. BTO mortgage withdrawals begin after keys.">i</button></th>
+              <th scope="col">CPF OA interest earned <button class="info-trigger" type="button" aria-label="Derivation for OA interest earned" data-derivation="Monthly approximation: add OA contributions, pay mortgage from OA above the preserved buffer, then apply the selected base OA interest rate. Does not include extra CPF interest.">i</button></th>
+              <th scope="col">CPF interest lost vs BTO <button class="info-trigger" type="button" aria-label="Derivation for CPF interest difference" data-derivation="BTO OA interest earned minus this path’s OA interest earned. Positive means the path earns less OA interest than BTO; it is shown separately from principal and home equity.">i</button></th>
+              <th scope="col">Future value of monthly investable difference vs BTO <button class="info-trigger" type="button" aria-label="Derivation for monthly investment value" data-derivation="Each month subtract BTO cash flow from the option cash flow after OA-funded mortgage payments and BTO-wait housing cost. Compound each month-end difference at the selected investment return over the calendar horizon. Positive favors resale cash flow; negative favors BTO.">i</button></th>
+            </tr>
+          </thead>
+          <tbody id="wealthRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="sensitivityTitle">
+      <div class="section-heading">
+        <h2 id="sensitivityTitle">Home-equity sensitivity</h2>
+        <span class="section-kicker">Fixed property-growth cases</span>
+      </div>
+      <p class="section-note">Equity is projected home value less remaining loan after the selected resale ownership period. The BTO does not show home equity until its estimated key-collection date.</p>
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">Home equity under negative and positive property price scenarios</caption>
+          <thead>
+            <tr>
+              <th scope="col">Annual price change</th>
+              <th scope="col">3-room price change <button class="info-trigger" type="button" aria-label="Derivation for 3-room price change" data-derivation="Starting 3-room price times one plus annual property change raised to the selected ownership period, minus starting price.">i</button></th>
+              <th scope="col">3-room gross equity <button class="info-trigger" type="button" aria-label="Derivation for 3-room gross equity" data-derivation="Projected 3-room home value minus its remaining mortgage after the selected ownership period.">i</button></th>
+              <th scope="col">4-room price change <button class="info-trigger" type="button" aria-label="Derivation for 4-room price change" data-derivation="Starting 4-room price times one plus annual property change raised to the selected ownership period, minus starting price.">i</button></th>
+              <th scope="col">4-room gross equity <button class="info-trigger" type="button" aria-label="Derivation for 4-room gross equity" data-derivation="Projected 4-room home value minus its remaining mortgage after the selected ownership period.">i</button></th>
+            </tr>
+          </thead>
+          <tbody id="sensitivityRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="calculationGuideTitle">
+      <div class="section-heading">
+        <h2 id="calculationGuideTitle">Calculation guide</h2>
+        <span class="section-kicker">How each result is derived</span>
+      </div>
+      <div class="table-wrap">
+        <table class="calculation-table">
+          <caption class="sr-only">Definitions and formulas used in the calculator outputs</caption>
+          <thead>
+            <tr>
+              <th scope="col">Output</th>
+              <th scope="col">Calculation</th>
+              <th scope="col">How to read it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="scenario-name">Loan and mortgage payment</td>
+              <td>Loan = min(price × LTV, payment-cap loan). Payment = L × i ÷ [1 − (1 + i)<sup>−n</sup>], where L is loan, i = annual rate (%) ÷ 100 ÷ 12, and n is term in months.</td>
+              <td>The assessment payment is for the affordability cap; the actual-rate payment is the modeled cash payment.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">Upfront funds</td>
+              <td>Price − modeled loan − grant + residential BSD.</td>
+              <td>Excludes legal fees, COV, renovation, furnishing and moving costs.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">OA and cash used upfront</td>
+              <td>Use starting OA above the selected buffer first, then starting cash. Any remaining amount is the funding gap.</td>
+              <td>Shows the funding source assumed for the OA-interest calculation. BTO payments are treated as paid upfront, not staged.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">Net rent and housing cost</td>
+              <td>Net rent = tenants × gross rent per room × (1 − reserve (%) ÷ 100). Net housing cost = actual mortgage − net rent.</td>
+              <td>Positive cost difference (resale − BTO) means resale costs more per mortgage-active month.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">Monthly cash after housing</td>
+              <td>Monthly cash flow = reserve-adjusted rent − mortgage cash top-up after OA withdrawals. For BTO before keys, subtract the entered current housing cost instead.</td>
+              <td>Positive cash flow can be invested; negative cash flow is a cash requirement. The selected OA buffer is preserved.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">Monthly investable difference</td>
+              <td>For each month t, d<sub>t</sub> = option cash flow − BTO cash flow. Future value updates as V<sub>t</sub> = V<sub>t−1</sub> × (1 + i) + d<sub>t</sub>, where i = annual return (%) ÷ 100 ÷ 12.</td>
+              <td>Positive means the resale path has more monthly cash to invest; negative means the BTO path has more. Includes BTO-wait housing cost entered above.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">BTO cash investment value</td>
+              <td>Extra cash used by resale vs BTO × [1 + investment return (%) ÷ 100]<sup>years</sup>.</td>
+              <td>Only extra cash is assigned the investment return; extra OA use is reflected in the CPF interest comparison.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">CPF OA interest</td>
+              <td>Start with OA after upfront use; add monthly OA contributions, pay mortgage from OA above the preserved buffer, then apply monthly base interest. Interest lost = BTO interest earned − option interest earned.</td>
+              <td>Positive means the option earns less OA interest than BTO. Includes different mortgage start dates; monthly approximation, excluding extra CPF interest and staged payments.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">Projected home equity</td>
+              <td>Home value = price × [1 + annual property change (%) ÷ 100]<sup>ownership years</sup>. Gross equity = projected home value − remaining mortgage.</td>
+              <td>Resale ownership years use the selected horizon. BTO ownership starts after the key wait; before keys, equity is not modeled.</td>
+            </tr>
+            <tr>
+              <td class="scenario-name">Total net worth</td>
+              <td>Cash and investments + CPF balances + property value − outstanding loans − other debts and sale costs.</td>
+              <td>The calculator does not combine all these items at one calendar date. Do not subtract opportunity cost again from home equity.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="accounting-note" aria-label="How to interpret the outputs">
+      <div>
+        <h2>Reading the investment values</h2>
+        <p>Upfront investment value applies only to extra cash used by resale; OA used is tracked separately through OA interest. Monthly cash advantage includes OA-funded mortgage payments, rent, cash top-ups and the entered BTO-wait housing cost. The OA estimate uses monthly contributions and base interest; it excludes extra CPF interest, staged upfront payments and a full common-date CPF forecast.</p>
+      </div>
+      <div>
+        <h2>Net worth accounting</h2>
+        <p>At a common date, total net worth includes cash and investments, CPF balances, property value, less the outstanding loan, other debts and transaction costs. Principal repayment builds home equity. Monthly cash-flow accumulation includes the BTO-wait housing cost you enter, but not other living costs. The OA-interest comparison is a simplified estimate, not a full CPF balance forecast.</p>
+      </div>
+    </section>
+    <p class="footnote">BSD uses current residential tier assumptions and assumes no ABSD. The loan cap uses the income-based payment limit at the assessment rate. Actual HFE, grant eligibility, valuation, lease, town-level rent and HDB rules control. This is an editable planning model, not financial advice or a loan approval.</p>
+  </main>
+  <div id="derivationPopover" popover="auto" role="note" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const form = document.getElementById("assumptions");
+      const derivationPopover = document.getElementById("derivationPopover");
+      const fields = ["btoPrice", "price3", "price4", "grant3", "grant4", "startingCash", "startingOA", "oaBuffer", "income", "ltv", "incomeCap", "assessmentRate", "actualRate", "term", "cpfAgeBand", "oaRate", "roomRent", "reserve", "investmentReturn", "propertyGrowth", "horizon", "btoWait", "btoMop", "btoWaitHousingCost"];
+      const initial = Object.fromEntries(fields.map((id) => [id, document.getElementById(id).value]));
+      const currency = new Intl.NumberFormat("en-SG", { maximumFractionDigits: 0 });
+      const roundMoney = (value) => Math.round(Number.isFinite(value) ? value : 0);
+      const money = (value) => {
+        const rounded = roundMoney(value);
+        return `${rounded < 0 ? "-" : ""}S$${currency.format(Math.abs(rounded))}`;
+      };
+      const signedMoney = (value) => {
+        const rounded = roundMoney(value);
+        if (rounded === 0) return "S$0";
+        return `${rounded > 0 ? "+" : "-"}S$${currency.format(Math.abs(rounded))}`;
+      };
+      const escapeAttribute = (value) => String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      const calculatedValue = (value, label, formula, inputs) => {
+        const result = String(value);
+        const derivation = `${label}\nFormula: ${formula}\nSubstitution: ${inputs}\nResult: ${result}`;
+        return `<span class="cell-result"><span>${escapeAttribute(result)}</span><button class="info-trigger" type="button" aria-label="Show formula and inputs for ${escapeAttribute(label)}" title="Show formula and inputs" data-derivation="${escapeAttribute(derivation)}">i</button></span>`;
+      };
+      const number = (id) => {
+        const element = document.getElementById(id);
+        const value = element.valueAsNumber;
+        if (Number.isFinite(value)) return value;
+        const parsed = Number(element.value);
+        return element.value !== "" && Number.isFinite(parsed) ? parsed : Number(initial[id]);
+      };
+      const payment = (principal, annualRate, months) => {
+        if (principal <= 0 || months <= 0) return 0;
+        const rate = annualRate / 100 / 12;
+        if (rate === 0) return principal / months;
+        return principal * rate / (1 - Math.pow(1 + rate, -months));
+      };
+      const loanBalance = (principal, annualRate, termMonths, monthsPaid) => {
+        if (principal <= 0) return 0;
+        const paid = Math.min(monthsPaid, termMonths);
+        if (paid >= termMonths) return 0;
+        const rate = annualRate / 100 / 12;
+        if (rate === 0) return principal * (1 - paid / termMonths);
+        const monthlyPayment = payment(principal, annualRate, termMonths);
+        return Math.max(0, principal * Math.pow(1 + rate, paid) - monthlyPayment * (Math.pow(1 + rate, paid) - 1) / rate);
+      };
+      const futureValueMonthly = (monthlyAmount, annualRate, months) => {
+        const rate = annualRate / 100 / 12;
+        if (rate === 0) return monthlyAmount * months;
+        return monthlyAmount * (Math.pow(1 + rate, months) - 1) / rate;
+      };
+      const futureValueCashFlows = (cashFlows, annualRate) => {
+        const rate = annualRate / 100 / 12;
+        return cashFlows.reduce((balance, cashFlow) => balance * (1 + rate) + cashFlow, 0);
+      };
+      const cpfOaContribution = (ordinaryWages, ageBand) => {
+        const rates = {
+          "35": { total: 0.37, oa: 0.6217, low: 0.17, marginal: 0.6 },
+          "36-45": { total: 0.37, oa: 0.5677, low: 0.17, marginal: 0.6 },
+          "46-50": { total: 0.37, oa: 0.5136, low: 0.17, marginal: 0.6 },
+          "51-55": { total: 0.37, oa: 0.4055, low: 0.17, marginal: 0.6 },
+          "56-60": { total: 0.34, oa: 0.353, low: 0.16, marginal: 0.54 },
+          "61-65": { total: 0.25, oa: 0.14, low: 0.125, marginal: 0.375 },
+          "66-70": { total: 0.165, oa: 0.0607, low: 0.09, marginal: 0.225 },
+          "70+": { total: 0.125, oa: 0.08, low: 0.075, marginal: 0.15 }
+        }[ageBand];
+        const cpfWages = Math.min(Math.max(0, ordinaryWages), 8000);
+        const rawTotal = cpfWages <= 50
+          ? 0
+          : cpfWages <= 500
+            ? cpfWages * rates.low
+            : cpfWages <= 750
+              ? cpfWages * rates.low + (cpfWages - 500) * rates.marginal
+              : cpfWages * rates.total;
+        const totalContribution = Math.round(rawTotal);
+        return Math.round(totalContribution * rates.oa);
+      };
+      const stampDuty = (price) => {
+        let remaining = Math.max(0, price);
+        let total = 0;
+        const tiers = [[180000, .01], [180000, .02], [640000, .03], [500000, .04], [1500000, .05], [Infinity, .06]];
+        for (const [band, rate] of tiers) {
+          const taxable = Math.min(remaining, band);
+          total += taxable * rate;
+          remaining -= taxable;
+          if (remaining <= 0) break;
+        }
+        return total;
+      };
+      const fundingPlan = (upfront) => {
+        const oaAvailable = Math.max(0, number("startingOA") - number("oaBuffer"));
+        const oaUsed = Math.min(upfront, oaAvailable);
+        const cashRequired = Math.max(0, upfront - oaUsed);
+        const cashUsed = Math.min(cashRequired, number("startingCash"));
+        return {
+          oaUsed,
+          cashUsed,
+          shortfall: Math.max(0, cashRequired - cashUsed)
+        };
+      };
+      const simulateOa = (scenario, months, btoWaitMonths, monthlyOaContribution) => {
+        const funding = fundingPlan(scenario.upfront);
+        let balance = Math.max(0, number("startingOA") - funding.oaUsed);
+        let interestEarned = 0;
+        const monthlyRate = number("oaRate") / 100 / 12;
+        const monthlyCashFlows = [];
+        for (let month = 1; month <= months; month += 1) {
+          balance += monthlyOaContribution;
+          const mortgageActive = scenario.type !== "BTO" || month > btoWaitMonths;
+          const oaAvailableAboveBuffer = Math.max(0, balance - number("oaBuffer"));
+          let cashTopUp = 0;
+          if (mortgageActive) {
+            const oaMortgagePayment = Math.min(oaAvailableAboveBuffer, scenario.monthlyPayment);
+            balance -= oaMortgagePayment;
+            cashTopUp = scenario.monthlyPayment - oaMortgagePayment;
+          }
+          const waitHousingCost = scenario.type === "BTO" && !mortgageActive ? number("btoWaitHousingCost") : 0;
+          monthlyCashFlows.push(scenario.netRent - cashTopUp - waitHousingCost);
+          const monthlyInterest = balance * monthlyRate;
+          balance += monthlyInterest;
+          interestEarned += monthlyInterest;
+        }
+        return { endingBalance: balance, interestEarned, funding, monthlyCashFlows };
+      };
+      const makeFlat = (name, price, grant, maxTenants, type, incomeLoanCap, termMonths) => {
+        const ltvLoan = price * number("ltv") / 100;
+        const loan = Math.max(0, Math.min(ltvLoan, incomeLoanCap));
+        const upfront = Math.max(0, price - loan - grant) + stampDuty(price);
+        const monthlyPayment = payment(loan, number("actualRate"), termMonths);
+        const stressPayment = payment(loan, number("assessmentRate"), termMonths);
+        const cashFlows = Array.from({ length: maxTenants + 1 }, (_, tenants) => ({
+          name,
+          type,
+          price,
+          loan,
+          upfront,
+          monthlyPayment,
+          stressPayment,
+          tenants,
+          netRent: tenants * number("roomRent") * (1 - number("reserve") / 100)
+        }));
+        return cashFlows;
+      };
+      const costDeltaCell = (delta, inputs) => {
+        const label = Math.abs(delta) < .5 ? "Baseline" : `${money(Math.abs(delta))} ${delta < 0 ? "lower" : "higher"}`;
+        const style = Math.abs(delta) < .5 ? "tag" : delta < 0 ? "lower" : "higher";
+        const derivation = `Monthly cost difference\nFormula: resale net housing cost − BTO net housing cost\nInputs: ${inputs}\nResult: ${label}`;
+        return `<span class="cell-result"><span class="${style}">${label}</span><button class="info-trigger" type="button" aria-label="Show formula and inputs for monthly cost difference" title="Show formula and inputs" data-derivation="${escapeAttribute(derivation)}">i</button></span>`;
+      };
+      const render = () => {
+        const years = number("horizon");
+        const months = years * 12;
+        const btoWaitYears = number("btoWait");
+        const btoMopYears = number("btoMop");
+        const btoHoldingYears = Math.max(0, years - btoWaitYears);
+        const btoHoldingMonths = btoHoldingYears * 12;
+        const termMonths = number("term") * 12;
+        const assessmentRate = number("assessmentRate");
+        const monthlyOaContribution = cpfOaContribution(number("income"), document.getElementById("cpfAgeBand").value);
+        document.getElementById("monthlyOAOutput").textContent = currency.format(monthlyOaContribution);
+        const cpfAgeBand = document.getElementById("cpfAgeBand");
+        document.getElementById("cpfOaInfo").dataset.derivation = `Estimated monthly CPF OA contribution\nFormula: rounded total CPF contribution × age-based OA allocation ratio\nInputs: Ordinary Wages ${money(number("income"))} (capped at S$8,000); age band ${cpfAgeBand.options[cpfAgeBand.selectedIndex].text}; 2026 full rates for citizens and third-year-or-later PRs\nResult: ${money(monthlyOaContribution)} per month`;
+        const incomePaymentLimit = number("income") * number("incomeCap") / 100;
+        const incomeLoanCap = assessmentRate === 0
+          ? incomePaymentLimit * termMonths
+          : incomePaymentLimit * (1 - Math.pow(1 + assessmentRate / 100 / 12, -termMonths)) / (assessmentRate / 100 / 12);
+        const investmentReturn = number("investmentReturn");
+        const propertyGrowth = number("propertyGrowth");
+        const growthRate = Math.max(0, 1 + propertyGrowth / 100);
+        const bto = {
+          name: "2-room BTO",
+          type: "BTO",
+          price: number("btoPrice"),
+          grant: 0,
+          maxTenants: 0
+        };
+        const btoLoan = Math.max(0, Math.min(bto.price * number("ltv") / 100, incomeLoanCap));
+        const btoUpfront = Math.max(0, bto.price - btoLoan) + stampDuty(bto.price);
+        const btoPayment = payment(btoLoan, number("actualRate"), termMonths);
+        const btoMonthlyCost = btoPayment;
+        const scenarios = [
+          { name: "2-room BTO", type: "BTO", price: bto.price, loan: btoLoan, upfront: btoUpfront, monthlyPayment: btoPayment, stressPayment: payment(btoLoan, assessmentRate, termMonths), tenants: 0, netRent: 0 },
+          ...makeFlat("3-room resale", number("price3"), number("grant3"), 1, "resale", incomeLoanCap, termMonths),
+          ...makeFlat("4-room resale", number("price4"), number("grant4"), 2, "resale", incomeLoanCap, termMonths)
+        ];
+        const incomeOutput = document.getElementById("incomeLoanOutput");
+        const threeOutput = document.getElementById("threeUpfrontOutput");
+        const fourOutput = document.getElementById("fourFundingOutput");
+        const saleEligibilityOutput = document.getElementById("saleEligibilityOutput");
+        const availableAfterBuffer = number("startingCash") + Math.max(0, number("startingOA") - number("oaBuffer"));
+        incomeOutput.innerHTML = calculatedValue(money(incomeLoanCap), "Income-capped loan", "Monthly cap × [1 − (1 + monthly rate)^−months] ÷ monthly rate", `${money(number("income"))} × ${number("incomeCap")}% = ${money(incomePaymentLimit)} per month; monthly rate ${assessmentRate}% ÷ 12 = ${(assessmentRate / 12).toFixed(4)}%; months ${termMonths}`);
+        const btoSaleYear = btoWaitYears + btoMopYears;
+        saleEligibilityOutput.innerHTML = calculatedValue(`Resale y5 · BTO y${btoSaleYear}`, "Earliest sale eligibility", "Resale MOP; BTO key wait + selected BTO MOP", `5 years; ${btoWaitYears} + ${btoMopYears} = ${btoSaleYear} years`);
+        const threeOne = scenarios.find((scenario) => scenario.name === "3-room resale" && scenario.tenants === 1);
+        const fourOne = scenarios.find((scenario) => scenario.name === "4-room resale" && scenario.tenants === 1);
+        const threeGap = threeOne.upfront - availableAfterBuffer;
+        const threeGapText = threeGap > 0 ? `${money(threeGap)} short` : `${money(Math.abs(threeGap))} remaining`;
+        threeOutput.innerHTML = calculatedValue(threeGapText, "3-room funding status", "Upfront funds − cash − max(0, starting OA − buffer)", `${money(threeOne.upfront)} − ${money(number("startingCash"))} − max(0, ${money(number("startingOA"))} − ${money(number("oaBuffer"))}) = ${money(threeGap)}`);
+        threeOutput.classList.toggle("warn", threeGap > 0);
+        const fourGap = fourOne.upfront - availableAfterBuffer;
+        const fourGapText = fourGap > 0 ? `${money(fourGap)} short` : `${money(Math.abs(fourGap))} remaining`;
+        fourOutput.innerHTML = calculatedValue(fourGapText, "4-room funding status", "Upfront funds − cash − max(0, starting OA − buffer)", `${money(fourOne.upfront)} − ${money(number("startingCash"))} − max(0, ${money(number("startingOA"))} − ${money(number("oaBuffer"))}) = ${money(fourGap)}`);
+        fourOutput.classList.toggle("warn", fourGap > 0);
+        const scenarioKey = (scenario) => `${scenario.name}|${scenario.tenants}`;
+        const oaByScenario = new Map(scenarios.map((scenario) => [scenarioKey(scenario), simulateOa(scenario, months, btoWaitYears * 12, monthlyOaContribution)]));
+        const btoOaStats = oaByScenario.get(scenarioKey(scenarios[0]));
+        const btoOaInterest = btoOaStats.interestEarned;
+        const btoFunding = btoOaStats.funding;
+        const cashRows = scenarios.map((scenario, index) => {
+          const netHousing = scenario.monthlyPayment - scenario.netRent;
+          const delta = netHousing - btoMonthlyCost;
+          const oaStats = oaByScenario.get(scenarioKey(scenario));
+          const funding = oaStats.funding;
+          const mortgageActiveNow = scenario.type !== "BTO" || btoWaitYears <= 0;
+          const oaFlow = monthlyOaContribution - (mortgageActiveNow ? scenario.monthlyPayment : 0);
+          const cashTopUp = scenario.type === "BTO" && btoWaitYears > 0
+            ? number("btoWaitHousingCost")
+            : scenario.netRent - oaStats.monthlyCashFlows[0];
+          const label = scenario.type === "BTO" ? scenario.name : `${scenario.name} / ${scenario.tenants} tenant${scenario.tenants === 1 ? "" : "s"}`;
+          const loanValue = calculatedValue(money(scenario.loan), "Loan amount", "min(price × LTV, income-capped loan)", `price ${money(scenario.price)}; LTV ${number("ltv")}% ; cap ${money(incomeLoanCap)}`);
+          const actualPaymentValue = calculatedValue(money(scenario.monthlyPayment), "Actual monthly payment", "Amortize loan at actual rate for selected term", `loan ${money(scenario.loan)}; rate ${number("actualRate")}% ; term ${number("term")} years`);
+          const assessmentPaymentValue = calculatedValue(money(scenario.stressPayment), "Assessment monthly payment", "Amortize loan at assessment rate for selected term", `loan ${money(scenario.loan)}; rate ${number("assessmentRate")}% ; term ${number("term")} years`);
+          const upfrontValue = calculatedValue(money(scenario.upfront), "Upfront funds", "price − loan − grant + residential BSD", `price ${money(scenario.price)}; loan ${money(scenario.loan)}; grant ${money(scenario.type === "BTO" ? 0 : number(scenario.name === "3-room resale" ? "grant3" : "grant4"))}; BSD ${money(stampDuty(scenario.price))}`);
+          const oaUsedValue = calculatedValue(money(funding.oaUsed), "OA used upfront", "min(upfront funds, starting OA − preserved buffer)", `upfront ${money(scenario.upfront)}; starting OA ${money(number("startingOA"))}; buffer ${money(number("oaBuffer"))}`);
+          const cashUsedValue = calculatedValue(money(funding.cashUsed), "Cash used upfront", "min(cash required after OA, starting cash)", `cash required ${money(Math.max(0, scenario.upfront - funding.oaUsed))}; starting cash ${money(number("startingCash"))}`);
+          const fundingGapValue = calculatedValue(funding.shortfall > 0 ? money(funding.shortfall) : "S$0", "Funding gap", "max(0, upfront funds − OA used − cash used)", `upfront ${money(scenario.upfront)}; OA used ${money(funding.oaUsed)}; cash used ${money(funding.cashUsed)}`);
+          const oaFlowValue = calculatedValue(
+            mortgageActiveNow ? `${signedMoney(oaFlow)} ${oaFlow >= 0 ? "OA surplus" : "OA shortfall"}` : `${money(monthlyOaContribution)} OA contribution; pre-keys`,
+            "Monthly OA flow",
+            mortgageActiveNow ? "monthly OA contribution − actual mortgage" : "monthly OA contribution; BTO mortgage has not started before keys",
+            `OA contribution ${money(monthlyOaContribution)}; mortgage ${mortgageActiveNow ? money(scenario.monthlyPayment) : "not started"}`
+          );
+          const netRentValue = calculatedValue(money(scenario.netRent), "Net rent", "tenants × gross rent × (1 − reserve)", `${scenario.tenants} tenants; gross rent ${money(number("roomRent"))} per room; reserve ${number("reserve")}%`);
+          const monthlyCashValue = calculatedValue(signedMoney(oaStats.monthlyCashFlows[0]), "Monthly cash after housing", "reserve-adjusted rent − cash mortgage top-up − BTO wait housing cost", `net rent ${money(scenario.netRent)}; cash top-up ${money(cashTopUp)}; BTO-wait cost ${scenario.type === "BTO" && btoWaitYears > 0 ? money(number("btoWaitHousingCost")) : "S$0"}`);
+          const netHousingValue = calculatedValue(money(netHousing), "Net housing cost", "actual mortgage − reserve-adjusted rent", `mortgage ${money(scenario.monthlyPayment)}; net rent ${money(scenario.netRent)}`);
+          return `<tr class="${index === 0 ? "baseline-row" : ""}">
+            <td class="scenario-name">${label}</td>
+            <td>${scenario.tenants}</td>
+            <td>${money(scenario.price)}</td>
+            <td>${loanValue}</td>
+            <td>${actualPaymentValue}</td>
+            <td>${assessmentPaymentValue}</td>
+            <td>${upfrontValue}</td>
+            <td>${oaUsedValue}</td>
+            <td>${cashUsedValue}</td>
+            <td>${fundingGapValue}</td>
+            <td>${oaFlowValue}</td>
+            <td>${netRentValue}</td>
+            <td>${monthlyCashValue}</td>
+            <td>${netHousingValue}</td>
+            <td>${costDeltaCell(delta, `option cost ${money(netHousing)}; BTO cost ${money(btoMonthlyCost)}`)}</td>
+          </tr>`;
+        }).join("");
+        document.getElementById("cashflowRows").innerHTML = cashRows;
+
+        const wealthRows = scenarios.map((scenario, index) => {
+          const oaStats = oaByScenario.get(scenarioKey(scenario));
+          const monthlyCashDifference = oaStats.monthlyCashFlows.map((cashFlow, month) => cashFlow - btoOaStats.monthlyCashFlows[month]);
+          const futureMonthlyCashDifference = futureValueCashFlows(monthlyCashDifference, investmentReturn);
+          const cashDifference = oaStats.funding.cashUsed - btoFunding.cashUsed;
+          const oaDifference = oaStats.funding.oaUsed - btoFunding.oaUsed;
+          const fundingGapDifference = oaStats.funding.shortfall - btoFunding.shortfall;
+          const futureBtoCashValue = cashDifference * Math.pow(1 + investmentReturn / 100, years);
+          const isBtoPreKeys = scenario.type === "BTO" && btoHoldingYears === 0;
+          const heldYears = scenario.type === "BTO" ? btoHoldingYears : years;
+          const heldMonths = scenario.type === "BTO" ? btoHoldingMonths : months;
+          const projectedValue = isBtoPreKeys ? null : scenario.price * Math.pow(growthRate, heldYears);
+          const balance = isBtoPreKeys ? null : loanBalance(scenario.loan, number("actualRate"), termMonths, heldMonths);
+          const equity = isBtoPreKeys ? null : projectedValue - balance;
+          const oaInterestLost = btoOaInterest - oaStats.interestEarned;
+          const label = scenario.type === "BTO" ? scenario.name : `${scenario.name} / ${scenario.tenants} tenant${scenario.tenants === 1 ? "" : "s"}`;
+          const baseline = index === 0;
+          const cashDiffValue = calculatedValue(baseline ? "Baseline" : signedMoney(cashDifference), "Extra cash used vs BTO", "option cash used upfront − BTO cash used upfront", `option cash ${money(oaStats.funding.cashUsed)}; BTO cash ${money(btoFunding.cashUsed)}`);
+          const oaDiffValue = calculatedValue(baseline ? "Baseline" : signedMoney(oaDifference), "Extra OA used vs BTO", "option OA used upfront − BTO OA used upfront", `option OA ${money(oaStats.funding.oaUsed)}; BTO OA ${money(btoFunding.oaUsed)}`);
+          const gapDiffValue = calculatedValue(baseline ? "Baseline" : signedMoney(fundingGapDifference), "Extra funding gap vs BTO", "option funding gap − BTO funding gap", `option gap ${money(oaStats.funding.shortfall)}; BTO gap ${money(btoFunding.shortfall)}`);
+          const btoCashValue = calculatedValue(baseline ? "Baseline" : money(futureBtoCashValue), "BTO cash investment value", "extra cash used by option × (1 + annual investment return) to the horizon", `cash difference ${signedMoney(cashDifference)}; return ${investmentReturn}%; years ${years}`);
+          const priceChangeValue = calculatedValue(isBtoPreKeys ? "Pre-keys" : signedMoney(projectedValue - scenario.price), "Price change", "projected home value − starting price", `starting price ${money(scenario.price)}; annual change ${propertyGrowth}%; ownership years ${heldYears}`);
+          const homeValueValue = calculatedValue(isBtoPreKeys ? "Pre-keys" : money(projectedValue), "Projected home value", "starting price × (1 + annual property change) to ownership years", `price ${money(scenario.price)}; annual change ${propertyGrowth}%; years ${heldYears}`);
+          const loanBalanceValue = calculatedValue(isBtoPreKeys ? "Not drawn" : money(balance), "Remaining loan balance", "amortized loan after the mortgage-active months", `loan ${money(scenario.loan)}; actual rate ${number("actualRate")}%; months ${heldMonths}; term ${number("term")} years`);
+          const equityValue = calculatedValue(isBtoPreKeys ? "Not modeled" : money(equity), "Gross home equity", "projected home value − remaining loan balance", `home value ${money(projectedValue ?? 0)}; loan balance ${money(balance ?? 0)}`);
+          const oaBalanceValue = calculatedValue(money(oaStats.endingBalance), "Ending OA balance", "OA after upfront use + monthly contributions + interest − OA mortgage withdrawals above buffer", `starting OA ${money(number("startingOA"))}; OA used ${money(oaStats.funding.oaUsed)}; monthly OA ${money(monthlyOaContribution)}; base rate ${number("oaRate")}%; months ${months}`);
+          const oaInterestValue = calculatedValue(money(oaStats.interestEarned), "OA interest earned", "sum of monthly base interest on simulated OA balance", `starting OA ${money(number("startingOA"))}; OA used ${money(oaStats.funding.oaUsed)}; monthly OA ${money(monthlyOaContribution)}; rate ${number("oaRate")}%; months ${months}`);
+          const oaLostValue = calculatedValue(baseline ? "Baseline" : signedMoney(oaInterestLost), "OA interest lost vs BTO", "BTO OA interest earned − option OA interest earned", `BTO interest ${money(btoOaInterest)}; option interest ${money(oaStats.interestEarned)}`);
+          const firstCashDifference = monthlyCashDifference[0] ?? 0;
+          const lastCashDifference = monthlyCashDifference[monthlyCashDifference.length - 1] ?? 0;
+          const monthlyRate = investmentReturn / 100 / 12;
+          const monthlyValue = calculatedValue(
+            signedMoney(futureMonthlyCashDifference),
+            "Future value of monthly cash difference",
+            "Sum each month’s (option cash flow − BTO cash flow) × (1 + monthly return)^(months remaining)",
+            `Horizon: ${years} years (${months} months); annual return: ${investmentReturn}% → monthly return ${(monthlyRate * 100).toFixed(4)}%. Month 1 difference: ${signedMoney(firstCashDifference)} (compounded for ${Math.max(0, months - 1)} months); month ${months} difference: ${signedMoney(lastCashDifference)} (no compounding). All ${months} monthly differences are included, including the months between these examples. BTO-wait housing cost: ${money(number("btoWaitHousingCost"))} per month during the wait.`
+          );
+          return `<tr class="${index === 0 ? "baseline-row" : ""}">
+            <td class="scenario-name">${label}</td>
+            <td>${scenario.tenants}</td>
+            <td>${cashDiffValue}</td>
+            <td>${oaDiffValue}</td>
+            <td>${gapDiffValue}</td>
+            <td>${btoCashValue}</td>
+            <td>${priceChangeValue}</td>
+            <td>${homeValueValue}</td>
+            <td>${loanBalanceValue}</td>
+            <td>${equityValue}</td>
+            <td>${oaBalanceValue}</td>
+            <td>${oaInterestValue}</td>
+            <td>${oaLostValue}</td>
+            <td>${monthlyValue}</td>
+          </tr>`;
+        }).join("");
+        document.getElementById("wealthRows").innerHTML = wealthRows;
+
+        const sensitivityGrowth = [-2, 0, 2, 4];
+        const threePrice = number("price3");
+        const fourPrice = number("price4");
+        const threeLoan = threeOne.loan;
+        const fourLoan = fourOne.loan;
+        const threeBalance = loanBalance(threeLoan, number("actualRate"), termMonths, months);
+        const fourBalance = loanBalance(fourLoan, number("actualRate"), termMonths, months);
+        document.getElementById("sensitivityRows").innerHTML = sensitivityGrowth.map((growth) => {
+          const factor = Math.pow(1 + growth / 100, years);
+          const threeFuture = threePrice * factor;
+          const fourFuture = fourPrice * factor;
+          return `<tr>
+            <td>${growth > 0 ? "+" : ""}${growth}%</td>
+            <td>${calculatedValue(signedMoney(threeFuture - threePrice), "3-room price change", "price × (1 + annual growth) to horizon − price", `price ${money(threePrice)}; growth ${growth}%; years ${years}`)}</td>
+            <td>${calculatedValue(money(threeFuture - threeBalance), "3-room gross equity", "projected home value − remaining loan", `home value ${money(threeFuture)}; loan balance ${money(threeBalance)}`)}</td>
+            <td>${calculatedValue(signedMoney(fourFuture - fourPrice), "4-room price change", "price × (1 + annual growth) to horizon − price", `price ${money(fourPrice)}; growth ${growth}%; years ${years}`)}</td>
+            <td>${calculatedValue(money(fourFuture - fourBalance), "4-room gross equity", "projected home value − remaining loan", `home value ${money(fourFuture)}; loan balance ${money(fourBalance)}`)}</td>
+          </tr>`;
+        }).join("");
+      };
+
+      form.addEventListener("input", render);
+      document.getElementById("resetButton").addEventListener("click", () => {
+        for (const id of fields) document.getElementById(id).value = initial[id];
+        render();
+      });
+      document.addEventListener("click", (event) => {
+        if (!(event.target instanceof Element)) return;
+        const button = event.target.closest(".info-trigger");
+        if (!button) return;
+        if (derivationPopover.matches(":popover-open")) derivationPopover.hidePopover();
+        const lines = (button.dataset.derivation || "").split("\n");
+        derivationPopover.replaceChildren();
+        const title = document.createElement("h3");
+        title.className = "derivation-title";
+        title.textContent = lines.shift() || "Calculation details";
+        derivationPopover.append(title);
+        for (const line of lines) {
+          const match = line.match(/^(Formula|Substitution|Inputs|Result):\s*(.*)$/);
+          if (!match) {
+            const copy = document.createElement("p");
+            copy.className = "derivation-copy";
+            copy.textContent = line;
+            derivationPopover.append(copy);
+            continue;
+          }
+          const row = document.createElement("div");
+          row.className = `derivation-row is-${match[1].toLowerCase()}`;
+          const label = document.createElement("span");
+          label.className = "derivation-label";
+          label.textContent = match[1];
+          const value = document.createElement("span");
+          value.className = "derivation-value";
+          value.textContent = match[2];
+          row.append(label, value);
+          derivationPopover.append(row);
+        }
+        derivationPopover.showPopover();
+      });
+      document.querySelectorAll(".scenario-table-wrap").forEach((wrapper) => {
+        const updateScrollState = () => wrapper.classList.toggle("is-scrolled", wrapper.scrollLeft > 0);
+        wrapper.addEventListener("scroll", updateScrollState, { passive: true });
+        updateScrollState();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
