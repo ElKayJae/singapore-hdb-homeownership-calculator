@@ -889,23 +889,27 @@
         let interestEarned = 0;
         const monthlyRate = number("oaRate") / 100 / 12;
         const monthlyCashFlows = [];
+        const monthlyDetails = [];
         for (let month = 1; month <= months; month += 1) {
           balance += monthlyOaContribution;
           const mortgageActive = scenario.type !== "BTO" || month > btoWaitMonths;
           const oaAvailableAboveBuffer = Math.max(0, balance - number("oaBuffer"));
           let cashTopUp = 0;
+          let oaMortgagePayment = 0;
           if (mortgageActive) {
-            const oaMortgagePayment = Math.min(oaAvailableAboveBuffer, scenario.monthlyPayment);
+            oaMortgagePayment = Math.min(oaAvailableAboveBuffer, scenario.monthlyPayment);
             balance -= oaMortgagePayment;
             cashTopUp = scenario.monthlyPayment - oaMortgagePayment;
           }
           const waitHousingCost = scenario.type === "BTO" && !mortgageActive ? number("btoWaitHousingCost") : 0;
-          monthlyCashFlows.push(scenario.netRent - cashTopUp - waitHousingCost);
+          const cashFlow = scenario.netRent - cashTopUp - waitHousingCost;
+          monthlyCashFlows.push(cashFlow);
+          monthlyDetails.push({ rent: scenario.netRent, cashTopUp, waitHousingCost, oaMortgagePayment, cashFlow });
           const monthlyInterest = balance * monthlyRate;
           balance += monthlyInterest;
           interestEarned += monthlyInterest;
         }
-        return { endingBalance: balance, interestEarned, funding, monthlyCashFlows };
+        return { endingBalance: balance, interestEarned, funding, monthlyCashFlows, monthlyDetails };
       };
       const makeFlat = (name, price, grant, maxTenants, type, incomeLoanCap, termMonths) => {
         const ltvLoan = price * number("ltv") / 100;
@@ -1049,6 +1053,8 @@
           const futureMonthlyCashDifference = futureValueCashFlows(monthlyCashDifference, investmentReturn);
           const lowestMonthlyCashDifference = Math.min(...monthlyCashDifference);
           const highestMonthlyCashDifference = Math.max(...monthlyCashDifference);
+          const lowestMonthIndex = monthlyCashDifference.indexOf(lowestMonthlyCashDifference);
+          const highestMonthIndex = monthlyCashDifference.indexOf(highestMonthlyCashDifference);
           const totalMonthlyCashDifference = monthlyCashDifference.reduce((total, difference) => total + difference, 0);
           const averageMonthlyCashDifference = totalMonthlyCashDifference / months;
           const cashDifference = oaStats.funding.cashUsed - btoFunding.cashUsed;
@@ -1078,6 +1084,11 @@
           const firstCashDifference = monthlyCashDifference[0] ?? 0;
           const lastCashDifference = monthlyCashDifference[monthlyCashDifference.length - 1] ?? 0;
           const monthlyRate = investmentReturn / 100 / 12;
+          const describeCashFlow = (detail) => `${money(detail.rent)} rent − ${money(detail.cashTopUp)} mortgage paid in cash − ${money(detail.waitHousingCost)} BTO waiting housing cost = ${signedMoney(detail.cashFlow)}`;
+          const lowestOptionCash = oaStats.monthlyDetails[lowestMonthIndex];
+          const lowestBtoCash = btoOaStats.monthlyDetails[lowestMonthIndex];
+          const highestOptionCash = oaStats.monthlyDetails[highestMonthIndex];
+          const highestBtoCash = btoOaStats.monthlyDetails[highestMonthIndex];
           const describeMonthlyCashDifference = (difference) => Math.abs(difference) < .5
             ? "about the same cash left after housing as BTO"
             : `${money(Math.abs(difference))} ${difference > 0 ? "more" : "less"} cash left after housing than BTO`;
@@ -1091,7 +1102,7 @@
             baseline ? "BTO reference" : `${signedMoney(averageMonthlyCashDifference)}/month`,
             "Average monthly cash difference vs BTO",
             "Average monthly cash left after housing for this option minus BTO. The cash-paid mortgage part is the loan payment not covered by CPF OA above the amount kept aside. Positive means more spendable cash on average; negative means less.",
-            `Total of monthly differences: ${signedMoney(totalMonthlyCashDifference)}. Comparison months: ${months}. Calculation: ${signedMoney(totalMonthlyCashDifference)} ÷ ${months} = ${signedMoney(averageMonthlyCashDifference)}/month. Monthly differences ranged from ${signedMoney(lowestMonthlyCashDifference)} to ${signedMoney(highestMonthlyCashDifference)} as CPF OA coverage changed.`
+            `Total of monthly differences: ${signedMoney(totalMonthlyCashDifference)}. Comparison months: ${months}. Average: ${signedMoney(totalMonthlyCashDifference)} ÷ ${months} = ${signedMoney(averageMonthlyCashDifference)}/month. Lowest, month ${lowestMonthIndex + 1}: option ${describeCashFlow(lowestOptionCash)}; BTO ${describeCashFlow(lowestBtoCash)}; difference ${signedMoney(lowestMonthlyCashDifference)}. Highest, month ${highestMonthIndex + 1}: option ${describeCashFlow(highestOptionCash)}; BTO ${describeCashFlow(highestBtoCash)}; difference ${signedMoney(highestMonthlyCashDifference)}. Between these months, CPF OA covered ${money(highestOptionCash.oaMortgagePayment - lowestOptionCash.oaMortgagePayment)} more of the mortgage, so cash paid toward the loan fell by ${money(lowestOptionCash.cashTopUp - highestOptionCash.cashTopUp)}. OA contributions and interest change the amount available.`
           );
           return `<tr class="${index === 0 ? "baseline-row" : ""}">
             <td class="scenario-name">${label}</td>
