@@ -669,7 +669,7 @@
         <h2 id="wealthTitle">Long-term investment trade-offs</h2>
         <span class="section-kicker">Possible flat growth and rent vs cash invested elsewhere</span>
       </div>
-      <p class="section-note">Rent can leave a resale option with more cash to invest each month, while a BTO may preserve more cash upfront. “Cash after housing” counts spendable cash, not CPF OA left after loan payments; CPF is shown separately. The model keeps these estimates separate rather than combining them into a full return because purchase dates, sale dates, and other costs differ.</p>
+      <p class="section-note">Rent can leave a resale option with more cash to invest each month, while a BTO may preserve more cash upfront. “Cash after housing” counts spendable cash, not CPF OA left after loan payments; CPF is shown separately. In the CPF interest column, a negative number means the option earns less than BTO; it is an estimated difference, not money taken out of CPF. The model keeps these estimates separate rather than combining them into a full return because purchase dates, sale dates, and other costs differ.</p>
       <div class="table-wrap scenario-table-wrap">
         <table class="scenario-table">
           <caption class="sr-only">Estimated savings, CPF, and flat value for options with different numbers of rooms rented</caption>
@@ -687,7 +687,7 @@
               <th scope="col">Estimated flat value after loan <button class="info-trigger" type="button" aria-label="About estimated flat value after loan" data-derivation="Estimated flat value after loan\nEstimated flat value minus the loan still owed. It excludes selling costs, CPF balances, and investment balances.">i</button></th>
               <th scope="col">Estimated CPF OA balance <button class="info-trigger" type="button" aria-label="About estimated CPF OA balance" data-derivation="Estimated CPF OA balance\nStarting OA after upfront use, plus estimated monthly contributions and interest, minus modeled mortgage payments from OA above the amount kept aside. This is simplified and subject to CPF rules.">i</button></th>
               <th scope="col">Estimated CPF interest <button class="info-trigger" type="button" aria-label="About estimated CPF interest" data-derivation="Estimated CPF interest\nA monthly estimate using the selected CPF OA interest rate and modeled balance. Extra CPF interest is not included.">i</button></th>
-              <th scope="col">CPF interest difference vs BTO <button class="info-trigger" type="button" aria-label="About CPF interest difference versus BTO" data-derivation="CPF interest difference vs BTO\nBTO estimated CPF interest minus this option's estimated CPF interest. A positive amount means this option earns less in the model.">i</button></th>
+              <th scope="col">CPF interest difference vs BTO <button class="info-trigger" type="button" aria-label="How to read the CPF interest difference" data-derivation="CPF interest difference vs BTO\nFormula: this option estimated CPF interest minus BTO estimated CPF interest.\nA negative amount means this option earns less than BTO; a positive amount means it earns more.\nThis is a difference in estimated interest, not cash removed from CPF.">i</button></th>
               <th scope="col">Value if monthly cash difference were invested <button class="info-trigger" type="button" aria-label="About the value if monthly cash difference were invested" data-derivation="Value if monthly cash difference were invested\nEach month, the model compares cash left after housing for this option with BTO. It then applies the selected example equity return to each month's difference. If this option leaves more cash each month, a higher return increases its value; if it leaves less, the BTO advantage grows. CPF OA savings are tracked separately.">i</button></th>
             </tr>
           </thead>
@@ -1100,7 +1100,7 @@
           const projectedValue = isBtoPreKeys ? null : scenario.price * Math.pow(growthRate, heldYears);
           const balance = isBtoPreKeys ? null : loanBalance(scenario.loan, number("actualRate"), termMonths, heldMonths);
           const equity = isBtoPreKeys ? null : projectedValue - balance;
-          const oaInterestLost = btoOaInterest - oaStats.interestEarned;
+          const oaInterestDifference = oaStats.interestEarned - btoOaInterest;
           const label = scenario.type === "BTO" ? scenario.name : `${scenario.name} / ${scenario.tenants} room${scenario.tenants === 1 ? "" : "s"} rented`;
           const baseline = index === 0;
           const cashDiffValue = calculatedValue(baseline ? "BTO reference" : signedMoney(cashDifference), "Extra cash used vs BTO", "Cash used upfront for this option minus cash used upfront for BTO", `option cash ${money(oaStats.funding.cashUsed)}; BTO cash ${money(btoFunding.cashUsed)}`);
@@ -1113,7 +1113,7 @@
           const equityValue = calculatedValue(isBtoPreKeys ? "After keys" : money(equity), "Estimated flat value after loan", "Estimated flat value minus the estimated loan still owed. Selling costs and other savings are not included.", `estimated flat value ${money(projectedValue ?? 0)}; loan still owed ${money(balance ?? 0)}`);
           const oaBalanceValue = calculatedValue(money(oaStats.endingBalance), "Estimated CPF OA balance", "Starting CPF OA after upfront use, plus estimated monthly contributions and interest, minus modeled mortgage payments", `starting OA ${money(number("startingOA"))}; CPF used ${money(oaStats.funding.oaUsed)}; monthly CPF ${money(monthlyOaContribution)}; yearly interest ${number("oaRate")}% ; months ${months}`);
           const oaInterestValue = calculatedValue(money(oaStats.interestEarned), "Estimated CPF interest", "Estimated interest on the modeled CPF OA balance using the selected yearly rate", `starting OA ${money(number("startingOA"))}; CPF used ${money(oaStats.funding.oaUsed)}; monthly CPF ${money(monthlyOaContribution)}; yearly rate ${number("oaRate")}% ; months ${months}`);
-          const oaLostValue = calculatedValue(baseline ? "BTO reference" : signedMoney(oaInterestLost), "CPF interest difference vs BTO", "BTO estimated CPF interest minus this option estimate. A positive amount means the option earns less in this model.", `BTO estimate ${money(btoOaInterest)}; option estimate ${money(oaStats.interestEarned)}`);
+          const cpfInterestValue = calculatedValue(baseline ? "BTO reference" : signedMoney(oaInterestDifference), "CPF interest difference vs BTO", "This option estimated CPF interest minus BTO estimated CPF interest. A negative amount means this option earns less in the model; it is not money removed from CPF.", `option interest ${money(oaStats.interestEarned)}; BTO interest ${money(btoOaInterest)}`);
           const monthlyValue = calculatedValue(
             signedMoney(futureMonthlyCashDifference),
             "Value if monthly cash difference were invested",
@@ -1133,7 +1133,7 @@
             <td>${equityValue}</td>
             <td>${oaBalanceValue}</td>
             <td>${oaInterestValue}</td>
-            <td>${oaLostValue}</td>
+            <td>${cpfInterestValue}</td>
             <td>${monthlyValue}</td>
           </tr>`;
         }).join("");
