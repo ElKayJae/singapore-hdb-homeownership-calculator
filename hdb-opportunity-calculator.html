@@ -669,7 +669,7 @@
         <h2 id="wealthTitle">Long-term investment trade-offs</h2>
         <span class="section-kicker">Possible flat growth and rent vs cash invested elsewhere</span>
       </div>
-      <p class="section-note">Rent can leave a resale option with more cash to invest each month, while a BTO may preserve more cash upfront. “Cash after housing” counts spendable cash, not CPF OA left after loan payments; CPF is shown separately. In the CPF interest column, a negative number means the option earns less than BTO; it is an estimated difference, not money taken out of CPF. The model keeps these estimates separate rather than combining them into a full return because purchase dates, sale dates, and other costs differ.</p>
+      <p class="section-note">Rent can leave a resale option with more cash to invest each month, while a BTO may preserve more cash upfront. The new monthly cash difference column shows the lowest-to-highest monthly amount; the next column estimates what those month-by-month differences might grow to at the selected equity return. “Cash after housing” counts spendable cash, not CPF OA left after loan payments; CPF is shown separately. In the CPF interest column, a negative number means the option earns less than BTO; it is an estimated difference, not money taken out of CPF. The model keeps these estimates separate rather than combining them into a full return because purchase dates, sale dates, and other costs differ.</p>
       <div class="table-wrap scenario-table-wrap">
         <table class="scenario-table">
           <caption class="sr-only">Estimated savings, CPF, and flat value for options with different numbers of rooms rented</caption>
@@ -688,6 +688,7 @@
               <th scope="col">Estimated CPF OA balance <button class="info-trigger" type="button" aria-label="About estimated CPF OA balance" data-derivation="Estimated CPF OA balance\nStarting OA after upfront use, plus estimated monthly contributions and interest, minus modeled mortgage payments from OA above the amount kept aside. This is simplified and subject to CPF rules.">i</button></th>
               <th scope="col">Estimated CPF interest <button class="info-trigger" type="button" aria-label="About estimated CPF interest" data-derivation="Estimated CPF interest\nA monthly estimate using the selected CPF OA interest rate and modeled balance. Extra CPF interest is not included.">i</button></th>
               <th scope="col">CPF interest difference vs BTO <button class="info-trigger" type="button" aria-label="How to read the CPF interest difference" data-derivation="CPF interest difference vs BTO\nFormula: this option estimated CPF interest minus BTO estimated CPF interest.\nA negative amount means this option earns less than BTO; a positive amount means it earns more.\nThis is a difference in estimated interest, not cash removed from CPF.">i</button></th>
+              <th scope="col">Monthly cash difference vs BTO <button class="info-trigger" type="button" aria-label="About the monthly cash difference versus BTO" data-derivation="Monthly cash difference vs BTO\nShows the lowest to highest monthly cash left after housing for this option, compared with BTO. Positive means this option leaves more spendable cash; negative means less. CPF OA balance changes are shown separately.">i</button></th>
               <th scope="col">Value if monthly cash difference were invested <button class="info-trigger" type="button" aria-label="About the value if monthly cash difference were invested" data-derivation="Value if monthly cash difference were invested\nEach month, the model compares cash left after housing for this option with BTO. It then applies the selected example equity return to each month's difference. If this option leaves more cash each month, a higher return increases its value; if it leaves less, the BTO advantage grows. CPF OA savings are tracked separately.">i</button></th>
             </tr>
           </thead>
@@ -719,7 +720,7 @@
               <th scope="col">Extra money needed <button class="info-trigger" type="button" aria-label="How extra money needed is estimated" data-derivation="Extra money needed\nAny estimated purchase amount left after the model uses CPF OA above your reserve and the cash you entered.">i</button></th>
               <th scope="col">CPF left after payment <button class="info-trigger" type="button" aria-label="About monthly CPF left after payment" data-derivation="Monthly CPF left after payment\nCompares the estimated monthly CPF OA contribution with the loan payment. Before BTO keys, the loan payment has not started.">i</button></th>
               <th scope="col">Rent after set-aside <button class="info-trigger" type="button" aria-label="How rent after set-aside is estimated" data-derivation="Rent after set-aside\nEstimated tenants × rent per room × the share left after the vacancy and upkeep set-aside. Actual rent and vacancy can differ.">i</button></th>
-              <th scope="col">Cash after housing <button class="info-trigger" type="button" aria-label="About cash after housing" data-derivation="Cash after housing\nRent after the set-aside, minus any loan payment not covered by CPF OA. During the BTO wait, the entered housing cost is also subtracted.">i</button></th>
+              <th scope="col">First-month cash after housing <button class="info-trigger" type="button" aria-label="About first-month cash after housing" data-derivation="First-month cash after housing\nRent after set-aside, minus any loan payment not covered by CPF OA. During the BTO wait, the entered housing cost is also subtracted. This is the first month only.">i</button></th>
               <th scope="col">Monthly payment after rent <button class="info-trigger" type="button" aria-label="How monthly payment after rent is estimated" data-derivation="Monthly payment after rent\nEstimated monthly loan payment minus estimated rent after the vacancy and upkeep set-aside. Other bills and costs are not included.">i</button></th>
               <th scope="col">Monthly difference vs BTO <button class="info-trigger" type="button" aria-label="How monthly difference versus BTO is calculated" data-derivation="Monthly difference vs BTO\nResale monthly payment after rent minus the 2-room BTO monthly payment. Positive means the resale estimate costs more each month; negative means it costs less.">i</button></th>
             </tr>
@@ -1090,6 +1091,11 @@
           const oaStats = oaByScenario.get(scenarioKey(scenario));
           const monthlyCashDifference = oaStats.monthlyCashFlows.map((cashFlow, month) => cashFlow - btoOaStats.monthlyCashFlows[month]);
           const futureMonthlyCashDifference = futureValueCashFlows(monthlyCashDifference, investmentReturn);
+          const lowestMonthlyCashDifference = Math.min(...monthlyCashDifference);
+          const highestMonthlyCashDifference = Math.max(...monthlyCashDifference);
+          const monthlyCashRange = Math.abs(highestMonthlyCashDifference - lowestMonthlyCashDifference) < .5
+            ? `${signedMoney(lowestMonthlyCashDifference)}/month`
+            : `${signedMoney(lowestMonthlyCashDifference)} to ${signedMoney(highestMonthlyCashDifference)}/month`;
           const cashDifference = oaStats.funding.cashUsed - btoFunding.cashUsed;
           const oaDifference = oaStats.funding.oaUsed - btoFunding.oaUsed;
           const fundingGapDifference = oaStats.funding.shortfall - btoFunding.shortfall;
@@ -1126,6 +1132,12 @@
             "Grow each month's difference in cash left after housing at the example yearly return until the end of the comparison period",
             `Month 1: ${describeMonthlyCashDifference(firstCashDifference)}. Month ${months}: ${describeMonthlyCashDifference(lastCashDifference)}. Includes all ${months} monthly differences. Example yearly return: ${investmentReturn}% (about ${(monthlyRate * 100).toFixed(2)}% monthly); earlier amounts are invested for longer.`
           );
+          const monthlyCashRangeValue = calculatedValue(
+            baseline ? "BTO reference" : monthlyCashRange,
+            "Monthly cash difference vs BTO",
+            "Option cash left after housing minus BTO cash left after housing. This is spendable cash after rent, cash loan payments, and the entered BTO waiting cost. CPF OA balance changes are separate.",
+            `Lowest month: ${signedMoney(lowestMonthlyCashDifference)}; highest month: ${signedMoney(highestMonthlyCashDifference)}; first month: ${signedMoney(monthlyCashDifference[0] ?? 0)}; last month: ${signedMoney(monthlyCashDifference[monthlyCashDifference.length - 1] ?? 0)}. Positive means more cash left for this option; negative means less than BTO.`
+          );
           return `<tr class="${index === 0 ? "baseline-row" : ""}">
             <td class="scenario-name">${label}</td>
             <td>${scenario.tenants}</td>
@@ -1140,6 +1152,7 @@
             <td>${oaBalanceValue}</td>
             <td>${oaInterestValue}</td>
             <td>${cpfInterestValue}</td>
+            <td>${monthlyCashRangeValue}</td>
             <td>${monthlyValue}</td>
           </tr>`;
         }).join("");
