@@ -1083,7 +1083,7 @@
         const button = event.target.closest(".info-trigger");
         if (!button) return;
         if (derivationPopover.matches(":popover-open")) derivationPopover.hidePopover();
-        const lines = (button.dataset.derivation || "").split("\n");
+        const lines = (button.dataset.derivation || "").replace(/\\n/g, "\n").split("\n");
         derivationPopover.replaceChildren();
         const title = document.createElement("h3");
         title.className = "derivation-title";
