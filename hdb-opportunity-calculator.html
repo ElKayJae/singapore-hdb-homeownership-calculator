@@ -470,15 +470,15 @@
       <span class="stamp">Sample figures · change any assumption</span>
     </div>
 
-    <h1>Which HDB option could fit your budget?</h1>
-    <p class="intro">Compare a new 2-room BTO flat with 3- or 4-room resale flats. The sample figures are only starting points. Change them to see how the estimated upfront money, monthly payments, and timing change. This is a planning guide, not a loan approval.</p>
+    <h1>Which HDB option offers better long-term value?</h1>
+    <p class="intro">Compare a new 2-room BTO with 3- or 4-room resale flats as both homes and investments. Explore possible flat price growth and room rent, alongside the cash you could invest in equities. These are uncertain scenarios; the calculator keeps the factors separate and does not declare one overall investment winner.</p>
 
     <section class="quick-start" aria-labelledby="quickStartTitle">
       <h2 id="quickStartTitle">Start here</h2>
       <ol class="quick-steps">
         <li>Enter the savings, income, and flat prices you know. You can leave other sample values as they are.</li>
-        <li>Check how much money may be needed at purchase and the estimated monthly cost.</li>
-        <li>Use the <strong>i</strong> buttons for explanations. Rent and future flat prices are uncertain estimates.</li>
+        <li>Explore the upfront and monthly costs, including how rent could change the monthly payment.</li>
+        <li>Compare possible flat price changes with what spare cash might grow to if invested in equities. Neither return is guaranteed.</li>
       </ol>
     </section>
 
@@ -488,6 +488,7 @@
         <dt>BTO</dt><dd>A new flat bought directly from HDB. You apply before it is built and wait for the keys.</dd>
         <dt>Resale</dt><dd>An existing flat bought from its current owner.</dd>
         <dt>CPF OA</dt><dd>Your CPF Ordinary Account savings. Some can be used for a home, subject to CPF rules.</dd>
+        <dt>Equity investments</dt><dd>Shares in companies or funds. Their value can rise or fall; the example return is not guaranteed.</dd>
         <dt>MSR</dt><dd>HDB's limit on how large a monthly housing-loan payment can be compared with income.</dd>
         <dt>Assessment rate</dt><dd>A higher interest rate used to estimate the loan size. It is not the rate used for the regular payment estimate.</dd>
         <dt>Minimum stay</dt><dd>The period a buyer generally must live in the flat before selling it. HDB rules depend on flat type.</dd>
@@ -495,35 +496,6 @@
         <dt>Money left / short</dt><dd>A rough check of upfront purchase money against the cash and CPF OA amounts entered above.</dd>
       </dl>
     </details>
-
-    <section class="status-strip" aria-label="Current model summary">
-      <div class="status-item">
-        <span class="status-label">Estimated maximum loan <button class="info-trigger" type="button" aria-label="How the estimated maximum loan is calculated" data-derivation="Estimated maximum loan\nThe calculator estimates how much the monthly payment limit could support over the selected loan term. The real loan amount is set by HDB after its assessment.">i</button></span>
-        <output class="status-value" id="incomeLoanOutput">-</output>
-      </div>
-      <div class="status-item">
-        <span class="status-label">3-room money left / short <button class="info-trigger" type="button" aria-label="How the 3-room money check works" data-derivation="Money left or short for a 3-room resale\nCompares estimated upfront purchase money with the cash and CPF OA entered above, while keeping the selected OA amount aside. A shortfall means more money would be needed. Fees and other costs are not included.">i</button></span>
-        <output class="status-value" id="threeUpfrontOutput">-</output>
-      </div>
-      <div class="status-item">
-        <span class="status-label">4-room money left / short <button class="info-trigger" type="button" aria-label="How the 4-room money check works" data-derivation="Money left or short for a 4-room resale\nCompares estimated upfront purchase money with the cash and CPF OA entered above, while keeping the selected OA amount aside. A shortfall means more money would be needed. Fees and other costs are not included.">i</button></span>
-        <output class="status-value warn" id="fourFundingOutput">-</output>
-      </div>
-      <div class="status-item">
-        <span class="status-label">Earliest modeled sale <button class="info-trigger" type="button" aria-label="How the sale timing estimate works" data-derivation="Earliest modeled sale\nThe resale estimate starts from purchase. The BTO estimate adds the wait for keys to the selected minimum occupation period. HDB rules and the flat's classification determine actual sale eligibility.">i</button></span>
-        <output class="status-value" id="saleEligibilityOutput">-</output>
-      </div>
-    </section>
-
-    <section class="upfront-chart" aria-labelledby="upfrontChartTitle">
-      <h2 id="upfrontChartTitle">Quick view: money needed at purchase</h2>
-      <p class="upfront-chart-note">The bar shows the estimated purchase money needed. The dark marker shows the cash and CPF OA entered above, after the amount you chose to keep in OA. A bar past the marker means the model shows a shortfall. Other costs are not included.</p>
-      <div class="chart-legend" aria-label="Chart legend">
-        <span class="chart-legend-item"><span class="chart-legend-bar" aria-hidden="true"></span>Estimated purchase money</span>
-        <span class="chart-legend-item"><span class="chart-legend-marker" aria-hidden="true"></span>Money available</span>
-      </div>
-      <div id="upfrontChartRows"></div>
-    </section>
 
     <form id="assumptions" autocomplete="off">
       <fieldset class="assumption-band">
@@ -635,7 +607,7 @@
             <div class="input-unit"><input id="reserve" type="number" min="0" max="90" step="1" value="15"><span>%</span></div>
           </div>
           <div class="field">
-            <label for="investmentReturn">Yearly return if spare cash is invested</label>
+            <label for="investmentReturn">Example yearly return on equity investments</label>
             <div class="input-unit"><input id="investmentReturn" type="number" min="-50" max="50" step="0.5" value="4"><span>% p.a.</span></div>
             <p class="field-note">An example only. Investments can lose value.</p>
           </div>
@@ -671,6 +643,59 @@
       </fieldset>
     </form>
 
+    <section class="status-strip" aria-label="Purchase and timing summary">
+      <div class="status-item">
+        <span class="status-label">Estimated maximum loan <button class="info-trigger" type="button" aria-label="How the estimated maximum loan is calculated" data-derivation="Estimated maximum loan\nThe calculator estimates how much the monthly payment limit could support over the selected loan term. The real loan amount is set by HDB after its assessment.">i</button></span>
+        <output class="status-value" id="incomeLoanOutput">-</output>
+      </div>
+      <div class="status-item">
+        <span class="status-label">3-room money left / short <button class="info-trigger" type="button" aria-label="How the 3-room money check works" data-derivation="Money left or short for a 3-room resale\nCompares estimated upfront purchase money with the cash and CPF OA entered above, while keeping the selected OA amount aside. A shortfall means more money would be needed. Fees and other costs are not included.">i</button></span>
+        <output class="status-value" id="threeUpfrontOutput">-</output>
+      </div>
+      <div class="status-item">
+        <span class="status-label">4-room money left / short <button class="info-trigger" type="button" aria-label="How the 4-room money check works" data-derivation="Money left or short for a 4-room resale\nCompares estimated upfront purchase money with the cash and CPF OA entered above, while keeping the selected OA amount aside. A shortfall means more money would be needed. Fees and other costs are not included.">i</button></span>
+        <output class="status-value warn" id="fourFundingOutput">-</output>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Earliest modeled sale <button class="info-trigger" type="button" aria-label="How the sale timing estimate works" data-derivation="Earliest modeled sale\nThe resale estimate starts from purchase. The BTO estimate adds the wait for keys to the selected minimum occupation period. HDB rules and the flat's classification determine actual sale eligibility.">i</button></span>
+        <output class="status-value" id="saleEligibilityOutput">-</output>
+      </div>
+    </section>
+
+
+
+    <section aria-labelledby="wealthTitle">
+      <div class="section-heading">
+        <h2 id="wealthTitle">Long-term investment trade-offs</h2>
+        <span class="section-kicker">Possible flat growth and rent vs cash invested elsewhere</span>
+      </div>
+      <p class="section-note">Compare possible flat price growth, rent after set-aside, monthly costs, CPF changes, and what spare cash might grow to if invested in equities. The model keeps these estimates separate because the options have different purchase and sale dates and several costs are not included.</p>
+      <div class="table-wrap scenario-table-wrap">
+        <table class="scenario-table">
+          <caption class="sr-only">Estimated savings, CPF, and flat value for options with different numbers of rooms rented</caption>
+          <thead>
+            <tr>
+              <th scope="col">Option</th>
+              <th scope="col">Rooms rented</th>
+              <th scope="col">Extra cash used vs BTO <button class="info-trigger" type="button" aria-label="About extra cash used versus BTO" data-derivation="Extra cash used vs BTO\nUpfront cash for this option minus upfront cash for the BTO. A positive amount is cash the BTO option would leave available instead.">i</button></th>
+              <th scope="col">Extra CPF used vs BTO <button class="info-trigger" type="button" aria-label="About extra CPF used versus BTO" data-derivation="Extra CPF used vs BTO\nCPF CPF savings used for this option minus CPF OA used for the BTO. The interest estimate is shown separately.">i</button></th>
+              <th scope="col">Extra money still needed vs BTO <button class="info-trigger" type="button" aria-label="About extra money still needed versus BTO" data-derivation="Extra money still needed vs BTO\nUpfront amount not covered by the entered cash and CPF OA, compared with the BTO shortfall. A positive amount means more money is needed.">i</button></th>
+              <th scope="col">What extra cash might grow to if invested <button class="info-trigger" type="button" aria-label="About the spare cash investment estimate" data-derivation="What extra cash might grow to if invested\nA simple example of investing the extra cash needed for resale instead, at the selected yearly return. It is not guaranteed and excludes fees and taxes.">i</button></th>
+              <th scope="col">Estimated flat value change <button class="info-trigger" type="button" aria-label="About estimated flat value change" data-derivation="Estimated flat value change\nEstimated future flat value minus the starting price, using the selected yearly price change. This is a scenario, not a prediction.">i</button></th>
+              <th scope="col">Estimated flat value <button class="info-trigger" type="button" aria-label="About estimated flat value" data-derivation="Estimated flat value\nStarting flat price changed by the selected yearly amount over the selected years. Future prices are not guaranteed.">i</button></th>
+              <th scope="col">Loan still owed <button class="info-trigger" type="button" aria-label="About the loan still owed estimate" data-derivation="Loan still owed\nEstimated remaining loan after the modeled monthly payments. The BTO loan starts after keys; the resale loan starts after purchase.">i</button></th>
+              <th scope="col">Estimated flat value after loan <button class="info-trigger" type="button" aria-label="About estimated flat value after loan" data-derivation="Estimated flat value after loan\nEstimated flat value minus the loan still owed. It excludes selling costs, CPF balances, and investment balances.">i</button></th>
+              <th scope="col">Estimated CPF OA balance <button class="info-trigger" type="button" aria-label="About estimated CPF OA balance" data-derivation="Estimated CPF OA balance\nStarting OA after upfront use, plus estimated monthly contributions and interest, minus modeled mortgage payments from OA above the amount kept aside. This is simplified and subject to CPF rules.">i</button></th>
+              <th scope="col">Estimated CPF interest <button class="info-trigger" type="button" aria-label="About estimated CPF interest" data-derivation="Estimated CPF interest\nA monthly estimate using the selected CPF OA interest rate and modeled balance. Extra CPF interest is not included.">i</button></th>
+              <th scope="col">CPF interest difference vs BTO <button class="info-trigger" type="button" aria-label="About CPF interest difference versus BTO" data-derivation="CPF interest difference vs BTO\nBTO estimated CPF interest minus this option's estimated CPF interest. A positive amount means this option earns less in the model.">i</button></th>
+              <th scope="col">Monthly spare-cash difference vs BTO <button class="info-trigger" type="button" aria-label="About monthly spare-cash difference versus BTO" data-derivation="Monthly spare-cash difference vs BTO\nEach month's cash after housing for this option minus the BTO amount, grown at the selected yearly investment return. Positive favors this option's monthly cash flow; negative favors BTO.">i</button></th>
+            </tr>
+          </thead>
+          <tbody id="wealthRows"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section aria-labelledby="cashflowTitle">
       <div class="section-heading">
         <h2 id="cashflowTitle">Buying costs and monthly housing costs</h2>
@@ -702,38 +727,15 @@
           <tbody id="cashflowRows"></tbody>
         </table>
       </div>
+    <section class="upfront-chart" aria-labelledby="upfrontChartTitle">
+      <h2 id="upfrontChartTitle">Purchase money check</h2>
+      <p class="upfront-chart-note">This checks upfront affordability. The bar shows estimated purchase money; the dark marker shows entered cash and CPF OA after the amount kept aside. A bar past the marker means the model shows a shortfall. Other costs are not included.</p>
+      <div class="chart-legend" aria-label="Chart legend">
+        <span class="chart-legend-item"><span class="chart-legend-bar" aria-hidden="true"></span>Estimated purchase money</span>
+        <span class="chart-legend-item"><span class="chart-legend-marker" aria-hidden="true"></span>Money available</span>
+      </div>
+      <div id="upfrontChartRows"></div>
     </section>
-
-    <section aria-labelledby="wealthTitle">
-      <div class="section-heading">
-        <h2 id="wealthTitle">Savings, CPF, and estimated flat value</h2>
-        <span class="section-kicker">These are separate estimates, not one overall score</span>
-      </div>
-      <p class="section-note">This section shows what cash might be left to invest, how CPF savings could change, and the estimated flat value after subtracting the remaining loan. These are different things, so the calculator does not add them into one score.</p>
-      <div class="table-wrap scenario-table-wrap">
-        <table class="scenario-table">
-          <caption class="sr-only">Estimated savings, CPF, and flat value for options with different numbers of rooms rented</caption>
-          <thead>
-            <tr>
-              <th scope="col">Option</th>
-              <th scope="col">Rooms rented</th>
-              <th scope="col">Extra cash used vs BTO <button class="info-trigger" type="button" aria-label="About extra cash used versus BTO" data-derivation="Extra cash used vs BTO\nUpfront cash for this option minus upfront cash for the BTO. A positive amount is cash the BTO option would leave available instead.">i</button></th>
-              <th scope="col">Extra CPF used vs BTO <button class="info-trigger" type="button" aria-label="About extra CPF used versus BTO" data-derivation="Extra CPF used vs BTO\nCPF CPF savings used for this option minus CPF OA used for the BTO. The interest estimate is shown separately.">i</button></th>
-              <th scope="col">Extra money still needed vs BTO <button class="info-trigger" type="button" aria-label="About extra money still needed versus BTO" data-derivation="Extra money still needed vs BTO\nUpfront amount not covered by the entered cash and CPF OA, compared with the BTO shortfall. A positive amount means more money is needed.">i</button></th>
-              <th scope="col">What spare cash could grow to <button class="info-trigger" type="button" aria-label="About the spare cash investment estimate" data-derivation="What spare cash could grow to\nA simple example of investing the extra cash needed for resale instead, at the selected yearly return. It is not guaranteed and excludes fees and taxes.">i</button></th>
-              <th scope="col">Estimated flat value change <button class="info-trigger" type="button" aria-label="About estimated flat value change" data-derivation="Estimated flat value change\nEstimated future flat value minus the starting price, using the selected yearly price change. This is a scenario, not a prediction.">i</button></th>
-              <th scope="col">Estimated flat value <button class="info-trigger" type="button" aria-label="About estimated flat value" data-derivation="Estimated flat value\nStarting flat price changed by the selected yearly amount over the selected years. Future prices are not guaranteed.">i</button></th>
-              <th scope="col">Loan still owed <button class="info-trigger" type="button" aria-label="About the loan still owed estimate" data-derivation="Loan still owed\nEstimated remaining loan after the modeled monthly payments. The BTO loan starts after keys; the resale loan starts after purchase.">i</button></th>
-              <th scope="col">Estimated flat value after loan <button class="info-trigger" type="button" aria-label="About estimated flat value after loan" data-derivation="Estimated flat value after loan\nEstimated flat value minus the loan still owed. It excludes selling costs, CPF balances, and investment balances.">i</button></th>
-              <th scope="col">Estimated CPF OA balance <button class="info-trigger" type="button" aria-label="About estimated CPF OA balance" data-derivation="Estimated CPF OA balance\nStarting OA after upfront use, plus estimated monthly contributions and interest, minus modeled mortgage payments from OA above the amount kept aside. This is simplified and subject to CPF rules.">i</button></th>
-              <th scope="col">Estimated CPF interest <button class="info-trigger" type="button" aria-label="About estimated CPF interest" data-derivation="Estimated CPF interest\nA monthly estimate using the selected CPF OA interest rate and modeled balance. Extra CPF interest is not included.">i</button></th>
-              <th scope="col">CPF interest difference vs BTO <button class="info-trigger" type="button" aria-label="About CPF interest difference versus BTO" data-derivation="CPF interest difference vs BTO\nBTO estimated CPF interest minus this option's estimated CPF interest. A positive amount means this option earns less in the model.">i</button></th>
-              <th scope="col">Monthly spare-cash difference vs BTO <button class="info-trigger" type="button" aria-label="About monthly spare-cash difference versus BTO" data-derivation="Monthly spare-cash difference vs BTO\nEach month's cash after housing for this option minus the BTO amount, grown at the selected yearly investment return. Positive favors this option's monthly cash flow; negative favors BTO.">i</button></th>
-            </tr>
-          </thead>
-          <tbody id="wealthRows"></tbody>
-        </table>
-      </div>
     </section>
 
     <section aria-labelledby="sensitivityTitle">
@@ -781,7 +783,7 @@
             <tr><td class="scenario-name">Rent and monthly payment after rent</td><td>Rent after set-aside is the number of rooms rented times rent per room, less the amount set aside for empty rooms and upkeep. Monthly payment after rent is the loan payment minus this rent estimate.</td><td>Other household costs are not included. Rent may be lower or absent if a room is empty.</td></tr>
             <tr><td class="scenario-name">Cash after housing</td><td>Rent after set-aside, minus any loan payment not covered by CPF OA. During the BTO wait, the entered housing cost is also subtracted.</td><td>A positive amount is left after these modeled costs; a negative amount means more cash is needed. Other bills are excluded.</td></tr>
             <tr><td class="scenario-name">Monthly spare-cash difference</td><td>Each month, the model compares cash after housing for the option with cash after housing for the BTO. Any difference is carried forward using the selected investment return.</td><td>A positive amount means more cash is left for this option in the model; a negative amount means more is left for BTO. Returns are not guaranteed.</td></tr>
-            <tr><td class="scenario-name">What spare cash could grow to</td><td>An example of what extra upfront cash used for resale might grow to if invested at the selected yearly return for the selected period.</td><td>This is a hypothetical example, not a promised return. CPF savings are shown separately.</td></tr>
+            <tr><td class="scenario-name">What extra cash might grow to if invested</td><td>An example of what extra upfront cash used for resale might grow to if invested at the selected yearly return for the selected period.</td><td>This is a hypothetical example, not a promised return. CPF savings are shown separately.</td></tr>
             <tr><td class="scenario-name">Estimated CPF savings and interest</td><td>The model starts with CPF OA after upfront use, adds estimated monthly CPF and interest, then subtracts loan payments made from OA above the amount kept aside.</td><td>This is simplified. It excludes extra CPF interest and some CPF withdrawal rules.</td></tr>
             <tr><td class="scenario-name">Estimated flat value after loan</td><td>Estimated flat value minus the loan still owed. The flat value changes by the selected yearly amount over the modeled period.</td><td>Future flat prices are unknown. This estimate excludes selling costs, CPF balances, rent, and other savings.</td></tr>
             <tr><td class="scenario-name">Total savings and assets</td><td>A full picture would include cash and investments, CPF savings, flat value, loans, other debts, and costs if selling.</td><td>This calculator does not combine all of these at the same date, so it does not provide one total wealth score.</td></tr>
@@ -1104,7 +1106,7 @@
           const cashDiffValue = calculatedValue(baseline ? "BTO reference" : signedMoney(cashDifference), "Extra cash used vs BTO", "Cash used upfront for this option minus cash used upfront for BTO", `option cash ${money(oaStats.funding.cashUsed)}; BTO cash ${money(btoFunding.cashUsed)}`);
           const oaDiffValue = calculatedValue(baseline ? "BTO reference" : signedMoney(oaDifference), "Extra CPF used vs BTO", "CPF OA used upfront for this option minus CPF OA used for BTO", `option CPF ${money(oaStats.funding.oaUsed)}; BTO CPF ${money(btoFunding.oaUsed)}`);
           const gapDiffValue = calculatedValue(baseline ? "BTO reference" : signedMoney(fundingGapDifference), "Extra money needed vs BTO", "Compare purchase money not covered by cash and CPF for each option", `option shortfall ${money(oaStats.funding.shortfall)}; BTO shortfall ${money(btoFunding.shortfall)}`);
-          const btoCashValue = calculatedValue(baseline ? "BTO reference" : money(futureBtoCashValue), "What spare cash could grow to", "An example of how extra cash used for resale could grow if invested for the selected period. Returns are not guaranteed.", `extra cash ${signedMoney(cashDifference)}; example return ${investmentReturn}%; years ${years}`);
+          const btoCashValue = calculatedValue(baseline ? "BTO reference" : money(futureBtoCashValue), "What extra cash might grow to if invested", "An example of how extra cash used for resale could grow if invested for the selected period. Returns are not guaranteed.", `extra cash ${signedMoney(cashDifference)}; example return ${investmentReturn}%; years ${years}`);
           const priceChangeValue = calculatedValue(isBtoPreKeys ? "After keys" : signedMoney(projectedValue - scenario.price), "Estimated flat value change", "Difference between the starting price and the estimated flat value under this yearly price scenario", `starting price ${money(scenario.price)}; yearly change ${propertyGrowth}%; years ${heldYears}`);
           const homeValueValue = calculatedValue(isBtoPreKeys ? "After keys" : money(projectedValue), "Estimated flat value", "Starting flat price changed by the selected yearly amount over the modeled years. This is a what-if, not a prediction.", `starting price ${money(scenario.price)}; yearly change ${propertyGrowth}%; years ${heldYears}`);
           const loanBalanceValue = calculatedValue(isBtoPreKeys ? "After keys" : money(balance), "Loan still owed", "Estimated loan left after the modeled monthly payments", `starting loan ${money(scenario.loan)}; interest rate ${number("actualRate")}% ; months paid ${heldMonths}; years to repay ${number("term")}`);
